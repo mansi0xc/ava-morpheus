@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAccount } from 'wagmi';
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { OrnateCard, OrnateCardContent, OrnateCardHeader, OrnateCardTitle } from '@/components/ui/ornate-card';
 import { OrnateButton } from '@/components/ui/ornate-button';
@@ -96,6 +97,7 @@ const importanceColors = {
 export const CaseClues: React.FC = () => {
   const [expandedClue, setExpandedClue] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const { isConnected } = useAccount();
 
   const categories = ['all', ...Array.from(new Set(clues.map(clue => clue.category)))];
   const filteredClues = selectedCategory === 'all' 
@@ -122,22 +124,28 @@ export const CaseClues: React.FC = () => {
             </p>
           </div>
 
-          {/* Category Filter */}
-          <div className="mb-8">
-            <div className="flex flex-wrap justify-center gap-4">
-              {categories.map((category) => (
-                <OrnateButton
-                  key={category}
-                  variant={selectedCategory === category ? "hero" : "ghost"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className="capitalize"
-                >
-                  {category === 'all' ? 'All Categories' : category}
-                </OrnateButton>
-              ))}
+          {/* Category Filter (gated) */}
+          {isConnected ? (
+            <div className="mb-8">
+              <div className="flex flex-wrap justify-center gap-4">
+                {categories.map((category) => (
+                  <OrnateButton
+                    key={category}
+                    variant={selectedCategory === category ? "hero" : "ghost"}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className="capitalize"
+                  >
+                    {category === 'all' ? 'All Categories' : category}
+                  </OrnateButton>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="mb-16 text-center">
+              <p className="font-ornate text-lg text-muted-foreground">Connect Wallet to view the category</p>
+            </div>
+          )}
 
           {/* Background Decorative Elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -148,154 +156,149 @@ export const CaseClues: React.FC = () => {
             </div>
           </div>
 
-          {/* Clues List */}
-          <div className="space-y-6 relative z-10">
-            {filteredClues.map((clue, index) => (
-              <OrnateCard 
-                key={clue.id}
-                className="transition-all duration-300 hover:shadow-glow cursor-pointer animate-ornate-entrance"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {/* Clue Header */}
-                <OrnateCardHeader 
-                  className="cursor-pointer"
-                  onClick={() => toggleClue(clue.id)}
+          {/* Clues List (gated) */}
+          {isConnected && (
+            <div className="space-y-6 relative z-10">
+              {filteredClues.map((clue, index) => (
+                <OrnateCard 
+                  key={clue.id}
+                  className="transition-all duration-300 hover:shadow-glow cursor-pointer animate-ornate-entrance"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      {expandedClue === clue.id ? (
-                        <ChevronDown className="w-6 h-6 text-primary" />
-                      ) : (
-                        <ChevronRight className="w-6 h-6 text-primary" />
-                      )}
-                      <div>
-                        <OrnateCardTitle className="text-xl mb-2">
-                          {clue.title}
-                        </OrnateCardTitle>
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <span className="flex items-center space-x-1">
-                            <FileText className="w-4 h-4" />
-                            <span>{clue.category}</span>
-                          </span>
-                          <span className="flex items-center space-x-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>{clue.date}</span>
-                          </span>
-                          <span className={`px-2 py-1 rounded text-xs border ${importanceColors[clue.importance]}`}>
-                            {clue.importance.toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <GearSpinner 
-                      size="sm" 
-                      className={`transition-opacity ${expandedClue === clue.id ? 'opacity-100' : 'opacity-50'}`} 
-                    />
-                  </div>
-                </OrnateCardHeader>
-
-                {/* Expanded Content */}
-                {expandedClue === clue.id && (
-                  <OrnateCardContent className="border-t border-primary/30 pt-6 animate-ornate-entrance">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Description and Details */}
-                      <div className="space-y-4">
+                  <OrnateCardHeader 
+                    className="cursor-pointer"
+                    onClick={() => toggleClue(clue.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        {expandedClue === clue.id ? (
+                          <ChevronDown className="w-6 h-6 text-primary" />
+                        ) : (
+                          <ChevronRight className="w-6 h-6 text-primary" />
+                        )}
                         <div>
-                          <h4 className="font-steampunk text-lg font-bold text-foreground glow-text mb-2">
-                            Description
-                          </h4>
-                          <p className="font-ornate text-foreground leading-relaxed">
-                            {clue.description}
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <h5 className="font-steampunk text-sm font-bold text-primary mb-1">
-                              Location
-                            </h5>
-                            <p className="font-ornate text-sm text-muted-foreground flex items-center">
-                              <MapPin className="w-4 h-4 mr-1" />
-                              {clue.location}
-                            </p>
-                          </div>
-                          <div>
-                            <h5 className="font-steampunk text-sm font-bold text-primary mb-1">
-                              Witness
-                            </h5>
-                            <p className="font-ornate text-sm text-muted-foreground flex items-center">
-                              <User className="w-4 h-4 mr-1" />
-                              {clue.witness}
-                            </p>
+                          <OrnateCardTitle className="text-xl mb-2">
+                            {clue.title}
+                          </OrnateCardTitle>
+                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                            <span className="flex items-center space-x-1">
+                              <FileText className="w-4 h-4" />
+                              <span>{clue.category}</span>
+                            </span>
+                            <span className="flex items-center space-x-1">
+                              <Calendar className="w-4 h-4" />
+                              <span>{clue.date}</span>
+                            </span>
+                            <span className={`px-2 py-1 rounded text-xs border ${importanceColors[clue.importance]}`}>
+                              {clue.importance.toUpperCase()}
+                            </span>
                           </div>
                         </div>
                       </div>
-
-                      {/* Evidence List */}
-                      <div>
-                        <h4 className="font-steampunk text-lg font-bold text-foreground glow-text mb-4">
-                          Evidence Points
-                        </h4>
-                        <div className="space-y-2">
-                          {clue.evidence.map((evidence, idx) => (
-                            <div 
-                              key={idx}
-                              className="flex items-start space-x-2 p-2 border border-primary/30 rounded bg-primary/10"
-                            >
-                              <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                              <p className="font-ornate text-sm text-foreground">
-                                {evidence}
+                      <GearSpinner 
+                        size="sm" 
+                        className={`transition-opacity ${expandedClue === clue.id ? 'opacity-100' : 'opacity-50'}`} 
+                      />
+                    </div>
+                  </OrnateCardHeader>
+                  {expandedClue === clue.id && (
+                    <OrnateCardContent className="border-t border-primary/30 pt-6 animate-ornate-entrance">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-steampunk text-lg font-bold text-foreground glow-text mb-2">
+                              Description
+                            </h4>
+                            <p className="font-ornate text-foreground leading-relaxed">
+                              {clue.description}
+                            </p>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <h5 className="font-steampunk text-sm font-bold text-primary mb-1">
+                                Location
+                              </h5>
+                              <p className="font-ornate text-sm text-muted-foreground flex items-center">
+                                <MapPin className="w-4 h-4 mr-1" />
+                                {clue.location}
                               </p>
                             </div>
-                          ))}
+                            <div>
+                              <h5 className="font-steampunk text-sm font-bold text-primary mb-1">
+                                Witness
+                              </h5>
+                              <p className="font-ornate text-sm text-muted-foreground flex items-center">
+                                <User className="w-4 h-4 mr-1" />
+                                {clue.witness}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-steampunk text-lg font-bold text-foreground glow-text mb-4">
+                            Evidence Points
+                          </h4>
+                          <div className="space-y-2">
+                            {clue.evidence.map((evidence, idx) => (
+                              <div 
+                                key={idx}
+                                className="flex items-start space-x-2 p-2 border border-primary/30 rounded bg-primary/10"
+                              >
+                                <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                                <p className="font-ornate text-sm text-foreground">
+                                  {evidence}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                      <div className="flex justify-end space-x-4 mt-6 pt-4 border-t border-primary/30">
+                        <OrnateButton variant="ghost" size="sm">
+                          <Search className="w-4 h-4 mr-2" />
+                          Cross-Reference
+                        </OrnateButton>
+                        <OrnateButton variant="gear" size="sm">
+                          Add to Investigation
+                        </OrnateButton>
+                      </div>
+                    </OrnateCardContent>
+                  )}
+                </OrnateCard>
+              ))}
+            </div>
+          )}
 
-                    {/* Action Buttons */}
-                    <div className="flex justify-end space-x-4 mt-6 pt-4 border-t border-primary/30">
-                      <OrnateButton variant="ghost" size="sm">
-                        <Search className="w-4 h-4 mr-2" />
-                        Cross-Reference
-                      </OrnateButton>
-                      <OrnateButton variant="gear" size="sm">
-                        Add to Investigation
-                      </OrnateButton>
+          {/* Summary Panel (gated) */}
+          {isConnected && (
+            <div className="mt-16">
+              <OrnateCard className="text-center">
+                <OrnateCardContent className="space-y-4">
+                  <h3 className="font-steampunk text-2xl font-bold text-foreground glow-text">
+                    Investigation Summary
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <div className="text-2xl font-steampunk text-primary glow-text">{clues.length}</div>
+                      <div className="text-sm text-muted-foreground">Total Clues</div>
                     </div>
-                  </OrnateCardContent>
-                )}
+                    <div>
+                      <div className="text-2xl font-steampunk text-red-400">{clues.filter(c => c.importance === 'critical').length}</div>
+                      <div className="text-sm text-muted-foreground">Critical Evidence</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-steampunk text-orange-400">{clues.filter(c => c.importance === 'high').length}</div>
+                      <div className="text-sm text-muted-foreground">High Priority</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-steampunk text-green-400">78%</div>
+                      <div className="text-sm text-muted-foreground">Case Progress</div>
+                    </div>
+                  </div>
+                </OrnateCardContent>
               </OrnateCard>
-            ))}
-          </div>
-
-          {/* Summary Panel */}
-          <div className="mt-16">
-            <OrnateCard className="text-center">
-              <OrnateCardContent className="space-y-4">
-                <h3 className="font-steampunk text-2xl font-bold text-foreground glow-text">
-                  Investigation Summary
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <div className="text-2xl font-steampunk text-primary glow-text">{clues.length}</div>
-                    <div className="text-sm text-muted-foreground">Total Clues</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-steampunk text-red-400">{clues.filter(c => c.importance === 'critical').length}</div>
-                    <div className="text-sm text-muted-foreground">Critical Evidence</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-steampunk text-orange-400">{clues.filter(c => c.importance === 'high').length}</div>
-                    <div className="text-sm text-muted-foreground">High Priority</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-steampunk text-green-400">78%</div>
-                    <div className="text-sm text-muted-foreground">Case Progress</div>
-                  </div>
-                </div>
-              </OrnateCardContent>
-            </OrnateCard>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

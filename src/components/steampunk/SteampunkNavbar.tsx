@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User, ChevronDown, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -10,9 +10,14 @@ import { useAppDispatch } from '@/store/hooks';
 import { setWalletAddress, setWalletStatus } from '@/store/walletSlice';
 
 
+import { useNavigate } from 'react-router-dom';
+// merged useRef into primary React import above; remove duplicate
+
 export const SteampunkNavbar: React.FC = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const prevConnectedRef = useRef<boolean>(false);
   const { address, isConnected, isConnecting, isDisconnected } = useAccount();
   const { status: connectStatus } = useConnect();
   const { status: disconnectStatus } = useDisconnect();
@@ -56,7 +61,30 @@ useEffect(() => {
       disconnectStatus,
       address: address || 'No address',
     });
+    if (isDisconnected && address) {
+      const addrStr = String(address);
+      const flagKey = `loginShown:${addrStr.toLowerCase()}`;
+      sessionStorage.removeItem(flagKey);
+    }
   }, [isConnected, isConnecting, isDisconnected, connectStatus, disconnectStatus, address]);
+
+  // On transition from disconnected to connected, route through login with return path
+  useEffect(() => {
+    const prev = prevConnectedRef.current;
+    if (!prev && isConnected) {
+      // Avoid redirect loop if already on login (with or without params)
+      if (!location.pathname.startsWith('/login')) {
+        const addrKey = address ? address.toLowerCase() : 'default';
+        const flagKey = `loginShown:${addrKey}`;
+        const alreadyShown = sessionStorage.getItem(flagKey) === '1';
+        if (!alreadyShown) {
+          const rawPath = `${location.pathname}${location.search}`;
+          navigate(`/login?return=${rawPath}`);
+        }
+      }
+    }
+    prevConnectedRef.current = isConnected;
+  }, [isConnected, location.pathname, location.search, navigate, address]);
 
   const navItems = [
     { name: 'About', path: '/about' },

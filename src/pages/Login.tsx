@@ -3,34 +3,74 @@ import { useNavigate } from 'react-router-dom';
 import { OrnateFrame } from '@/components/steampunk/OrnateFrame';
 import { GearSpinner } from '@/components/steampunk/GearSpinner';
 
+import { useLocation } from 'react-router-dom';
+import { useAccount } from 'wagmi';
+
 export const Login: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isConnected, address } = useAccount();
+  const searchParams = new URLSearchParams(location.search);
+  // Decode potential encoded value and sanitize
+  const rawReturn = searchParams.get('return') || '/catalog';
+  let decodedReturn: string;
+  try {
+    decodedReturn = decodeURIComponent(rawReturn);
+  } catch {
+    decodedReturn = '/catalog';
+  }
+  // Basic validation: must start with '/' and not be /login to avoid loops
+  if (!decodedReturn.startsWith('/')) decodedReturn = '/catalog';
+  if (decodedReturn === '/login') decodedReturn = '/catalog';
+  const returnTo = decodedReturn;
+
+// Redirect away if not connected
+useEffect(() => {
+  if (!isConnected) {
+    navigate('/', { replace: true });
+  }
+}, [isConnected, navigate]);
 
 useEffect(() => {
+  if (!isConnected) return; // do not start progress until connected
+  const addrKey = address ? address.toLowerCase() : 'default';
+  const flagKey = `loginShown:${addrKey}`;
+  const alreadyShown = sessionStorage.getItem(flagKey) === '1';
+  // If already shown, jump to 100% and immediately redirect
+  if (alreadyShown) {
+    setProgress(100);
+    setIsLoading(false);
+    const id = setTimeout(() => navigate(returnTo, { replace: true }), 50);
+    return () => clearTimeout(id);
+  }
+  let completed = false;
   const timer = setInterval(() => {
     setProgress((prev) => {
-      // Slightly larger steps early, tiny steps near the end
       const base = prev < 85 ? 6 : prev < 97 ? 2 : 1;
-      const jitter = prev < 85 ? Math.random() * 4 : Math.random(); // keep some life
+      const jitter = prev < 85 ? Math.random() * 4 : Math.random();
       const next = Math.min(prev + base + jitter, 100);
-
-      if (next >= 100) {
+      if (next >= 100 && !completed) {
+        completed = true;
         clearInterval(timer);
         setIsLoading(false);
-        // small pause to show "Access granted!" then navigate
-        const to = setTimeout(() => navigate('/catalog'), 1000);
-        // ensure we clean up that timeout on unmount too
+        // Set session flag so we don't show again this session
+        sessionStorage.setItem(flagKey, '1');
+        setTimeout(() => {
+          navigate(returnTo, { replace: true });
+        }, 400);
         return 100;
       }
-
       return next;
     });
   }, 300);
-
   return () => clearInterval(timer);
-}, [navigate]);
+}, [isConnected, navigate, returnTo, address]);
+
+  if (!isConnected) {
+    return null; // transient blank while redirecting
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">

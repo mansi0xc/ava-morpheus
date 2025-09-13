@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAccount } from 'wagmi';
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { OrnateCard, OrnateCardContent, OrnateCardHeader, OrnateCardTitle } from '@/components/ui/ornate-card';
 import { OrnateButton } from '@/components/ui/ornate-button';
@@ -113,6 +114,7 @@ export const Marketplace: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'price' | 'rarity' | 'name'>('name');
   const [cart, setCart] = useState<Set<string>>(new Set());
+  const { isConnected } = useAccount();
 
   const filteredItems = marketItems.filter(item => 
     selectedCategory === 'all' || item.category === selectedCategory
@@ -128,10 +130,12 @@ export const Marketplace: React.FC = () => {
   });
 
   const addToCart = (itemId: string) => {
+    if (!isConnected) return; // ignore when disconnected
     setCart(prev => new Set([...prev, itemId]));
   };
 
   const removeFromCart = (itemId: string) => {
+    if (!isConnected) return; // ignore when disconnected
     setCart(prev => {
       const newCart = new Set(prev);
       newCart.delete(itemId);
@@ -278,19 +282,20 @@ export const Marketplace: React.FC = () => {
                           variant="hero" 
                           className="flex-1"
                           onClick={() => removeFromCart(item.id)}
+                          disabled={!isConnected}
                         >
                           <ShoppingCart className="w-4 h-4 mr-2" />
-                          Remove
+                          {isConnected ? 'Remove' : 'Connect Wallet'}
                         </OrnateButton>
                       ) : (
                         <OrnateButton 
                           variant="gear" 
                           className="flex-1"
                           onClick={() => addToCart(item.id)}
-                          disabled={item.inStock === 0}
+                          disabled={item.inStock === 0 || !isConnected}
                         >
                           <ShoppingCart className="w-4 h-4 mr-2" />
-                          {item.inStock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                          {!isConnected ? 'Connect Wallet' : item.inStock === 0 ? 'Out of Stock' : 'Add to Cart'}
                         </OrnateButton>
                       )}
                       <OrnateButton variant="ghost" size="icon">
@@ -304,7 +309,7 @@ export const Marketplace: React.FC = () => {
           </div>
 
           {/* Cart Summary */}
-          {cart.size > 0 && (
+          {isConnected && cart.size > 0 && (
             <div className="fixed bottom-6 right-6 z-50">
               <OrnateCard className="min-w-[250px] animate-ornate-entrance">
                 <OrnateCardContent className="space-y-3">
