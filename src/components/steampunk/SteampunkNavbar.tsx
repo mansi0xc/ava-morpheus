@@ -1,17 +1,35 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User, ChevronDown, Cog, Package, MapPin, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OrnateButton } from '@/components/ui/ornate-button';
 import { GearSpinner } from './GearSpinner';
-import { useAccount } from 'wagmi';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export const SteampunkNavbar: React.FC = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const location = useLocation();
-  const { isConnected } = useAccount();
+  const { address, isConnected, isConnecting, isDisconnected } = useAccount();
+  const { status: connectStatus } = useConnect();
+  const { status: disconnectStatus } = useDisconnect();
+
+  // Console logging for wallet connection status
+  useEffect(() => {
+    console.log('🔗 Wallet Connection Status:', {
+      isConnected,
+      isConnecting,
+      isDisconnected,
+      connectStatus,
+      disconnectStatus,
+      address: address || 'No address',
+    });
+
+    if (address) {
+      console.log('💼 Wallet Address:', address);
+    }
+  }, [isConnected, isConnecting, isDisconnected, connectStatus, disconnectStatus, address]);
 
   const navItems = [
     { name: 'About', path: '/about' },
@@ -96,9 +114,13 @@ export const SteampunkNavbar: React.FC = () => {
                           <OrnateButton
                             variant="default"
                             size="sm"
-                            onClick={openConnectModal}
+                            onClick={() => {
+                              console.log('🚀 Opening wallet connect modal...');
+                              openConnectModal();
+                            }}
+                            disabled={isConnecting}
                           >
-                            Connect Wallet
+                            {isConnecting ? 'Connecting...' : 'Connect Wallet'}
                           </OrnateButton>
                         );
                       }
@@ -108,7 +130,16 @@ export const SteampunkNavbar: React.FC = () => {
                           <OrnateButton
                             variant="ghost"
                             size="sm"
-                            onClick={() => setIsProfileOpen(!isProfileOpen)}
+                            onClick={() => {
+                              console.log('👤 Profile dropdown toggled, account info:', {
+                                address: account?.address,
+                                displayName: account?.displayName,
+                                displayBalance: account?.displayBalance,
+                                chainId: chain?.id,
+                                chainName: chain?.name,
+                              });
+                              setIsProfileOpen(!isProfileOpen);
+                            }}
                             className="flex items-center space-x-2"
                           >
                             <User className="w-4 h-4" />

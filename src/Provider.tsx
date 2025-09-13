@@ -4,6 +4,7 @@ import { WagmiProvider } from "wagmi";
 import { config } from "./wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { darkTheme, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { avalancheFuji } from "wagmi/chains";
 import "@rainbow-me/rainbowkit/styles.css";
 
 const queryClient = new QueryClient();
@@ -17,7 +18,7 @@ export default function Providers({
         <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
                 <RainbowKitProvider
-                    initialChain={84532}
+                    initialChain={avalancheFuji}
                     theme={darkTheme({
                         accentColor: "#7b3fe4",
                         accentColorForeground: "white",
