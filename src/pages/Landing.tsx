@@ -2,20 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { OrnateButton } from '@/components/ui/ornate-button';
 import { GearSpinner } from '@/components/steampunk/GearSpinner';
-import steampunkBg from '@/assets/steampunk-bg.jpg';
 import gearOrnament from '@/assets/gear-ornament.png';
 
 export const Landing: React.FC = () => {
   return (
-    <div 
-      className="min-h-screen relative overflow-hidden flex items-center justify-center"
-      style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${steampunkBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
-    >
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
       {/* Animated Background Gears */}
       <div className="absolute inset-0 overflow-hidden">
         <GearSpinner 

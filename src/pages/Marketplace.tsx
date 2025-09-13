@@ -4,7 +4,6 @@ import { OrnateCard, OrnateCardContent, OrnateCardHeader, OrnateCardTitle } from
 import { OrnateButton } from '@/components/ui/ornate-button';
 import { GearSpinner } from '@/components/steampunk/GearSpinner';
 import { ShoppingCart, Star, Crown, Zap, Shield, Gem, Filter, SortAsc } from 'lucide-react';
-import steampunkBg from '@/assets/steampunk-bg.jpg';
 
 interface MarketItem {
   id: string;
@@ -143,15 +142,7 @@ export const Marketplace: React.FC = () => {
   const isInCart = (itemId: string) => cart.has(itemId);
 
   return (
-    <div 
-      className="min-h-screen steampunk-bg"
-      style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url(${steampunkBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
-    >
+    <div className="min-h-screen relative">
       <SteampunkNavbar />
       
       <div className="pt-24 pb-16 px-4">

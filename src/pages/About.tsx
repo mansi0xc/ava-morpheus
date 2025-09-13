@@ -3,19 +3,10 @@ import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { OrnateFrame } from '@/components/steampunk/OrnateFrame';
 import { GearSpinner } from '@/components/steampunk/GearSpinner';
 import { Cog, Clock, Compass, Wrench } from 'lucide-react';
-import steampunkBg from '@/assets/steampunk-bg.jpg';
 
 export const About: React.FC = () => {
   return (
-    <div 
-      className="min-h-screen steampunk-bg"
-      style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url(${steampunkBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
-    >
+    <div className="min-h-screen relative">
       <SteampunkNavbar />
       
       <div className="pt-24 pb-16 px-4">
