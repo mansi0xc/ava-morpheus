@@ -4,6 +4,10 @@ import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { Component as RaycastBackground } from '@/components/raycast-animated-background';
 import { OrnateButton } from '@/components/ui/ornate-button';
 import { Link } from 'react-router-dom';
+import { postActivity } from "@/lib/api";
+import { useAppSelector } from '@/store/hooks';
+import { selectWalletAddress } from '@/store/walletSlice';
+
 
 // (Typing effect removed per refactor: UI streamlined to immediate gameplay)
 
@@ -124,6 +128,9 @@ export const SudokuGame = () => {
   const [showError, setShowError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [timer, setTimer] = useState<number>(0);
+  const walletAddress = useAppSelector(selectWalletAddress);
+const postedRef = useRef(false);
+
 
   // New states for added functionality
   const [selectedCell, setSelectedCell] = useState<{ row: number, col: number } | null>(null);
@@ -158,7 +165,7 @@ export const SudokuGame = () => {
     setErrorMessage("");
     setSelectedCell(null);
     setHistory([puzzle.map(row => [...row])]);
-    setHintsRemaining(3); // Reset hints (medium difficulty)
+    setHintsRemaining(300); // Reset hints (medium difficulty)
     setNotes(Array(9).fill(null).map(() => Array(9).fill(null).map(() => new Set())));
     setNotesMode(false);
     setTimer(0);
@@ -203,7 +210,53 @@ export const SudokuGame = () => {
       setIsGameComplete(true);
       // Completed
     }
+    if (isComplete) {
+  const completion = {
+    walletAddress,
+    action: 'Solved',
+    puzzleName: 'Clockwork Sudoku',
+    difficulty,
+    timeTakenMillis: Date.now() - (startTime ?? 0),
+    errors,
+    performance: errors === 0 ? 'Perfect' : errors <= 3 ? 'Excellent' : errors <= 8 ? 'Great' : 'Well Done',
+  };
+  // postActivity(completion).catch(console.error);
+}
   }, [board, solution]);
+  
+  useEffect(() => {
+  if (!isGameComplete || postedRef.current) return;
+
+  // don’t post without a wallet
+  const wa = walletAddress?.trim();
+  if (!wa) return;
+
+  postedRef.current = true;
+
+  const duration =
+    (endTime ?? Date.now()) - (startTime ?? Date.now());
+
+  const completion = {
+    walletAddress: wa,
+    action: 'Solved',
+    puzzleName: 'Clockwork Sudoku',
+    difficulty,
+    timeTakenMillis: duration,
+    errors,
+    performance:
+      errors === 0 ? 'Perfect'
+      : errors <= 3 ? 'Excellent'
+      : errors <= 8 ? 'Great'
+      : 'Well Done',
+  };
+
+  postActivity(completion)
+    .catch(err => {
+      // allow retry if you want
+      postedRef.current = false;
+      console.error('postActivity failed', err);
+    });
+}, [isGameComplete, endTime, walletAddress, startTime, errors, difficulty]);
 
   // Handle cell value changes
   const handleChange = (row: number, col: number, value: number) => {
