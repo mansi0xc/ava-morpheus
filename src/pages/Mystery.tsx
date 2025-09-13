@@ -2,82 +2,48 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 
-// Example avatar images (replace with your own assets if available)
-import avatar1 from '@/assets/gear-ornament.png';
-import avatar2 from '@/assets/gear-ornament.png';
+// Base fallback ornament (used if external avatar fails)
+import ornament from '@/assets/gear-ornament.png';
+// Import generated case content
+// Using assertion to treat JSON as module; adjust tsconfig if needed
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import content from '@/content.json';
 // You can add more avatar images as needed
 
 export const Mystery: React.FC = () => {
   const [selectedClue, setSelectedClue] = useState<number | null>(null);
 
-  const mysteryNotes = [
-    {
-      id: 1,
-      title: 'The Brass Key',
-      content: 'Found beneath the great clock tower...',
-      x: 20,
-      y: 30,
-      color: 'red',
-      avatar: avatar1,
-      character: 'Professor Cogsworth',
-      description: 'A brilliant inventor known for his intricate clockwork devices and cryptic clues.'
-    },
-    {
-      id: 2,
-      title: 'Steam Patterns',
-      content: 'The pipes spell out ancient symbols...',
-      x: 60,
-      y: 20,
-      color: 'white',
-      avatar: avatar2,
-      character: 'Lady Gearhart',
-      description: 'A mysterious engineer who deciphers the language of steam and gears.'
-    },
-    {
-      id: 3,
-      title: 'Gear Alignment',
-      content: 'When all gears turn in harmony...',
-      x: 30,
-      y: 60,
-      color: 'red',
-      avatar: avatar1,
-      character: 'Sir Brassington',
-      description: 'A master mechanic with a knack for aligning even the most stubborn gears.'
-    },
-    {
-      id: 4,
-      title: 'The Clockmaker',
-      content: 'His signature appears on every piece...',
-      x: 70,
-      y: 70,
-      color: 'white',
-      avatar: avatar2,
-      character: 'The Clockmaker',
-      description: 'A legendary artisan whose works are shrouded in secrecy.'
-    },
-    {
-      id: 5,
-      title: 'Hidden Chamber',
-      content: 'Behind the largest gear lies a secret...',
-      x: 50,
-      y: 45,
-      color: 'red',
-      avatar: avatar1,
-      character: 'Miss Valve',
-      description: 'A daring explorer always searching for hidden chambers and lost treasures.'
-    },
-    {
-      id: 6,
-      title: 'Time Cipher',
-      content: 'The clock hands point to more than time...',
-      x: 80,
-      y: 40,
-      color: 'white',
-      avatar: avatar2,
-      character: 'Dr. Chronos',
-      description: 'A timekeeper obsessed with unraveling the mysteries of time.'
-    }
+  // Extract data from imported JSON structure
+  const caseData = (content as any).case || {};
+  const victim = caseData.victim || {};
+  const suspects = caseData.suspects || [];
+
+  // Map suspects to board notes (reuse existing coordinates layout)
+  const coordinates = [
+    { x: 20, y: 30, color: 'red' },
+    { x: 60, y: 20, color: 'white' },
+    { x: 30, y: 60, color: 'red' },
+    { x: 70, y: 70, color: 'white' },
+    { x: 50, y: 45, color: 'red' },
+    { x: 80, y: 40, color: 'white' }
   ];
+
+  // Generate pseudo-random avatar URLs (DiceBear or similar public avatar service)
+  const avatarSeeds = suspects.slice(0,6).map((s:any, i:number) => encodeURIComponent(`${s.name}-${i}-${s.age||'x'}`));
+  const avatarUrls = avatarSeeds.map(seed => `https://api.dicebear.com/7.x/shapes/svg?seed=${seed}&backgroundType=gradientLinear,solid&size=128`);
+
+  const mysteryNotes = suspects.slice(0, 6).map((s: any, idx: number) => {
+    const coord = coordinates[idx] || coordinates[0];
+    return {
+      id: s.id,
+      title: s.name,
+      content: s.background,
+      full: s,
+      avatar: avatarUrls[idx] || ornament,
+      ...coord
+    };
+  });
 
   const connections = [
     { from: 1, to: 3 },
@@ -124,12 +90,19 @@ export const Mystery: React.FC = () => {
           >
             <div className="bg-black/70 border-2 border-red-600 rounded-xl px-8 py-6 shadow-lg relative overflow-hidden">
               <div className="absolute inset-0 pointer-events-none opacity-40" style={{ background: 'radial-gradient(circle at 30% 20%, rgba(232,65,66,0.25), transparent 70%)' }}></div>
+              <div className="uppercase tracking-[0.25em] text-xs text-red-400 mb-2 font-semibold">STORYLINE</div>
               <h2 className="text-2xl md:text-3xl text-red-600 mb-3 font-serif tracking-wide" style={{ textShadow: '0 0 12px #E84142' }}>
-                Storyline
+                {caseData.title || 'Case Title'}
               </h2>
-              <p className="text-gray-200 leading-relaxed font-serif text-base md:text-lg">
-                In the heart of the brassbound metropolis, time itself feels engineered. Cryptic devices, vanished artisans, and clandestine alliances converge around the Great Clock. Each clue you uncover is a cog—turn it, and new mechanisms engage. Follow the trails, interrogate the relics, and unravel the conspiracy before the final chime resets more than the hour.
+              <p className="text-gray-200 leading-relaxed font-serif text-base md:text-lg mb-4">
+                {caseData.shortDescription || 'No description available.'}
               </p>
+              <div className="space-y-2 text-sm md:text-base font-serif text-gray-300">
+                <div><span className="text-red-500 font-semibold">Victim:</span> {victim.name} ({victim.age}) – {victim.avaxRole}</div>
+                <div className="text-gray-400 leading-relaxed">
+                  {victim.background}
+                </div>
+              </div>
             </div>
           </motion.div>
 
@@ -330,7 +303,8 @@ export const Mystery: React.FC = () => {
                         {/* Avatar */}
                         <img
                           src={note.avatar}
-                          alt={note.character}
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).src = ornament; }}
+                          alt={note.title}
                           className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full border-4 border-white shadow-lg bg-black object-cover z-20"
                         />
                         {/* Steampunk Bolt */}
@@ -354,7 +328,7 @@ export const Mystery: React.FC = () => {
                             {note.title}
                           </h3>
                           <p className="text-sm text-gray-400 leading-tight whitespace-pre-wrap break-words">
-                            {note.content}
+                            {note.content?.length > 110 ? note.content.slice(0, 110) + '…' : note.content}
                           </p>
                         </div>
 
@@ -386,23 +360,45 @@ export const Mystery: React.FC = () => {
                 >
                   &times;
                 </button>
-                <div className="flex flex-col items-center">
-                  <img
-                    src={mysteryNotes.find(n => n.id === selectedClue)?.avatar}
-                    alt={mysteryNotes.find(n => n.id === selectedClue)?.character}
-                    className="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-black object-cover mb-4"
-                  />
-                  <h2 className="text-2xl text-red-600 mb-2" style={{ fontFamily: 'serif', textShadow: '0 0 10px #E84142' }}>
-                    {mysteryNotes.find(n => n.id === selectedClue)?.character}
-                  </h2>
-                  <p className="text-white text-center text-lg mb-2">
-                    {mysteryNotes.find(n => n.id === selectedClue)?.description}
-                  </p>
-                  <div className="w-16 h-1 bg-gradient-to-r from-red-600 via-white to-red-600 mx-auto rounded-full mb-2"></div>
-                  <div className="text-gray-400 text-center text-base">
-                    <span className="font-bold">Clue:</span> {mysteryNotes.find(n => n.id === selectedClue)?.title}
-                  </div>
-                </div>
+                {(() => {
+                  const note = mysteryNotes.find(n => n.id === selectedClue);
+                  if (!note) return null;
+                  const s = note.full || {};
+                  return (
+                    <div className="flex flex-col items-center">
+                      <img
+                        src={note.avatar}
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = ornament; }}
+                        alt={note.title}
+                        className="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-black object-cover mb-4"
+                      />
+                      <h2 className="text-2xl text-red-600 mb-2" style={{ fontFamily: 'serif', textShadow: '0 0 10px #E84142' }}>
+                        {note.title}
+                      </h2>
+                      <div className="w-16 h-1 bg-gradient-to-r from-red-600 via-white to-red-600 mx-auto rounded-full mb-4" />
+                      <div className="text-gray-200 text-sm space-y-2 font-serif text-left w-full">
+                        <p><span className="text-red-500 font-semibold">Age:</span> {s.age}</p>
+                        <p><span className="text-red-500 font-semibold">Background:</span> {s.background}</p>
+                        <p><span className="text-red-500 font-semibold">Possible Motive:</span> {s.possibleMotive}</p>
+                        {Array.isArray(s.educationalLinks) && s.educationalLinks.length > 0 && (
+                          <div>
+                            <p className="text-red-500 font-semibold mb-1">Educational Links:</p>
+                            <ul className="list-disc list-inside space-y-1 text-gray-300">
+                              {s.educationalLinks.map((l: any, i: number) => (
+                                <li key={i} className="text-xs break-words">
+                                  <span className="font-semibold">{l.term}:</span> <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-red-400 underline hover:text-red-300">{l.url}</a>
+                                  {l.briefExplanation && (
+                                    <span className="block text-[11px] text-gray-400 mt-0.5">{l.briefExplanation}</span>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
               </motion.div>
             </div>
           )}          
