@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { OrnateFrame } from '@/components/steampunk/OrnateFrame';
 import { GearSpinner } from '@/components/steampunk/GearSpinner';
-import steampunkBg from '@/assets/steampunk-bg.jpg';
 
 export const Login: React.FC = () => {
   const [progress, setProgress] = useState(0);
@@ -34,15 +33,7 @@ useEffect(() => {
 }, [navigate]);
 
   return (
-    <div 
-      className="min-h-screen relative overflow-hidden flex items-center justify-center p-4"
-      style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url(${steampunkBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
-    >
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
       {/* Background Gears and Roman Numerals */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Large Clock Face Background */}

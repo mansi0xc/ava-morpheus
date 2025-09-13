@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
-import steampunkBg from '@/assets/steampunk-bg.jpg';
 
 // Example avatar images (replace with your own assets if available)
 import avatar1 from '@/assets/gear-ornament.png';
-import avatar2 from '@/assets/steampunk-bg.jpg';
+import avatar2 from '@/assets/gear-ornament.png';
 // You can add more avatar images as needed
 
 export const Mystery: React.FC = () => {
@@ -89,15 +88,7 @@ export const Mystery: React.FC = () => {
   ];
 
   return (
-    <div
-      className="min-h-screen steampunk-bg"
-      style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url(${steampunkBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
-    >
+    <div className="min-h-screen relative">        
       <SteampunkNavbar />
 
       <div className="pt-24 pb-16 px-4">

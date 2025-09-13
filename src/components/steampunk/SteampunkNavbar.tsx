@@ -12,6 +12,7 @@ export const SteampunkNavbar: React.FC = () => {
 
   const navItems = [
     { name: 'About', path: '/about' },
+    { name: 'Game Catalogue', path: '/catalog' },
     { name: 'Mystery', path: '/mystery' },
     { name: 'Case Clues', path: '/clues' },
     { name: 'Marketplace', path: '/marketplace' },
