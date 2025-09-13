@@ -9,22 +9,29 @@ export const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          setTimeout(() => {
-            navigate('/catalog');
-          }, 1000);
-          return 100;
-        }
-        return prev + Math.random() * 15 + 5;
-      });
-    }, 300);
+useEffect(() => {
+  const timer = setInterval(() => {
+    setProgress((prev) => {
+      // Slightly larger steps early, tiny steps near the end
+      const base = prev < 85 ? 6 : prev < 97 ? 2 : 1;
+      const jitter = prev < 85 ? Math.random() * 4 : Math.random(); // keep some life
+      const next = Math.min(prev + base + jitter, 100);
 
-    return () => clearInterval(timer);
-  }, [navigate]);
+      if (next >= 100) {
+        clearInterval(timer);
+        setIsLoading(false);
+        // small pause to show "Access granted!" then navigate
+        const to = setTimeout(() => navigate('/catalog'), 1000);
+        // ensure we clean up that timeout on unmount too
+        return 100;
+      }
+
+      return next;
+    });
+  }, 300);
+
+  return () => clearInterval(timer);
+}, [navigate]);
 
   return (
     <div 
@@ -111,25 +118,28 @@ export const Login: React.FC = () => {
           {/* Progress Indicators */}
           <div className="flex justify-between items-center">
             {/* 0% Indicator */}
-            <div className="relative">
+            {/* <div className="relative">
               <div className="w-16 h-16 bg-surface border-2 border-primary transform rotate-45 flex items-center justify-center shadow-glow">
                 <span className="font-steampunk text-sm font-bold text-primary transform -rotate-45 glow-text">
                   0%
                 </span>
               </div>
-            </div>
+            </div> */}
 
             {/* Current Progress Indicator */}
-            <div className="relative">
-              <div className="w-20 h-20 bg-gradient-primary border-2 border-primary transform rotate-45 flex items-center justify-center shadow-glow animate-border-glow">
-                <span className="font-steampunk text-lg font-bold text-primary-foreground transform -rotate-45">
-                  {Math.round(progress)}%
-                </span>
-              </div>
-            </div>
+           <div className="relative w-full mt-6">
+  <div className="absolute left-1/2 -translate-x-1/2">
+    <div className="w-20 h-20 bg-gradient-primary border-2 border-primary transform rotate-45 flex items-center justify-center shadow-glow animate-border-glow">
+      <span className="font-steampunk text-lg font-bold text-primary-foreground transform -rotate-45">
+        {Math.round(progress)}%
+      </span>
+    </div>
+  </div>
+</div>
+
 
             {/* 100% Indicator */}
-            <div className="relative">
+            {/* <div className="relative">
               <div className={`w-16 h-16 border-2 transform rotate-45 flex items-center justify-center transition-all duration-500 ${
                 progress >= 100 
                   ? 'bg-gradient-primary border-primary shadow-glow animate-border-glow' 
@@ -141,11 +151,11 @@ export const Login: React.FC = () => {
                   100%
                 </span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Status Text */}
-          <div className="mt-8">
+          <div style={{ marginTop: 120}}>
             <p className="font-ornate text-sm text-muted-foreground">
               {progress < 30 && "Initializing clockwork mechanisms..."}
               {progress >= 30 && progress < 60 && "Calibrating steam pressure..."}
