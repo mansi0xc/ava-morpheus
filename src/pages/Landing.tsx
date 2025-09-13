@@ -84,7 +84,7 @@ export const Landing: React.FC = () => {
 
               {/* Title Text */}
               <h1 className="font-steampunk text-6xl md:text-8xl font-bold text-foreground glow-text mb-4">
-                AVALANCHE
+                Ava Morpheus
               </h1>
               <p className="font-ornate text-xl md:text-2xl text-primary glow-text">
                 STEAMPUNK GAMING PORTAL
