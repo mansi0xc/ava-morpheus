@@ -16,9 +16,9 @@ const games = [
     players: '1 Player'
   },
   {
-    id: 'wordle',
-    title: 'Steam Cipher',
-    description: 'Decode hidden words through steam-powered letter mechanics',
+    id: 'wordle', //spelling bee renamed to wordle for integration consistency
+    title: "Iron Lexicon",
+    description: "Decode intricate words through clockwork letters and steam-driven puzzles.",
     icon: BookOpen,
     difficulty: 'Easy',
     players: '1 Player'
@@ -128,6 +128,15 @@ export const GameCatalog: React.FC = () => {
                   
                   {game.id === 'sudoku' ? (
                     <Link to="/games/sudoku">
+                      <OrnateButton 
+                        variant="gear" 
+                        className="w-full group-hover:bg-primary group-hover:text-primary-foreground"
+                      >
+                        ENTER GAME
+                      </OrnateButton>
+                    </Link>
+                  ) : game.id === 'wordle' ? (
+                    <Link to="/games/steam-cipher">
                       <OrnateButton 
                         variant="gear" 
                         className="w-full group-hover:bg-primary group-hover:text-primary-foreground"

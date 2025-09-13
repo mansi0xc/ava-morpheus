@@ -1,0 +1,244 @@
+
+{
+  "generatedAt": "2025-09-13T13:59:38.964Z",
+  "engine": "Gemini (via src/functions/generate.ts)",
+  "theme": "nft_forgery",
+  "difficulty": "advanced",
+  "case": {
+    "id": "AvalancheNFTForgery",
+    "title": "The Avalanche Avalanche: Counterfeit NFTs on the Blockchain",
+    "shortDescription": "Counterfeit NFTs flood Avalanche marketplaces, mirroring the style of renowned artist Anya Petrova.  Investigators must unravel the mystery using blockchain forensics, focusing on metadata inconsistencies and digital provenance.",
+    "victim": {
+      "name": "Anya Petrova",
+      "age": 35,
+      "background": "Renowned digital artist specializing in generative art and known for unique metadata embedded in her NFTs",
+      "avaxRole": "NFT Artist"
+    },
+    "suspects": [
+      {
+        "id": 1,
+        "name": "Anya Petrova",
+        "age": 35,
+        "background": "Renowned digital artist, original creator of the imitated NFTs",
+        "possibleMotive": "Insurance fraud or artificially inflating market value",
+        "avaxConnection": "Original NFT creator on Avalanche",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Mark Olsen",
+        "age": 40,
+        "background": "Operator of a prominent Avalanche NFT marketplace",
+        "possibleMotive": "Profiting from increased transaction fees or deliberately overlooking counterfeits",
+        "avaxConnection": "Marketplace owner",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Ricardo Diaz",
+        "age": 28,
+        "background": "Tech-savvy programmer specializing in blockchain technology and NFT standards",
+        "possibleMotive": "Financial gain through selling counterfeits or malicious intent",
+        "avaxConnection": "Independent Avalanche blockchain developer",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "name": "Evelyn Reed",
+        "age": 32,
+        "background": "Jealous art collector with a history of bidding wars against Anya Petrova",
+        "possibleMotive": "Damaging Petrova's reputation and potentially lowering the value of her genuine NFTs",
+        "avaxConnection": "High-profile Avalanche NFT collector",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "name": "Kai Zhang",
+        "age": 25,
+        "background": "A rising star in the Avalanche NFT space; known for highly detailed imitations of existing works",
+        "possibleMotive": "Gaining popularity through imitation and generating quick profits.",
+        "avaxConnection": "Up-and-coming Avalanche NFT artist",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "name": "Sergei Volkov",
+        "age": 45,
+        "background": "Former employee of Mark Olsen's marketplace, recently fired for undisclosed reasons",
+        "possibleMotive": "Revenge for his dismissal and to expose corruption in the marketplace.",
+        "avaxConnection": "Former employee of Olsen's Marketplace",
+        "educationalLinks": []
+      }
+    ],
+    "clues": [
+      {
+        "id": 1,
+        "description": "The counterfeit NFTs have identical image files but different metadata hashes compared to Anya's originals.",
+        "avaxConcept": "NFT metadata and hashing",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ],
+        "difficulty": "medium"
+      },
+      {
+        "id": 2,
+        "description": "Blockchain analysis reveals the counterfeit NFTs were minted from a previously unknown wallet.",
+        "avaxConcept": "NFT minting and provenance on Avalanche",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ],
+        "difficulty": "easy"
+      },
+      {
+        "id": 3,
+        "description": "The minting timestamps of the counterfeit NFTs are clustered within a short timeframe.",
+        "avaxConcept": "Blockchain timestamps and transaction analysis",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ],
+        "difficulty": "easy"
+      },
+      {
+        "id": 4,
+        "description": "Examination of the metadata reveals subtle inconsistencies in color palettes not present in Petrova's works.",
+        "avaxConcept": "NFT metadata and image analysis",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ],
+        "difficulty": "medium"
+      },
+      {
+        "id": 5,
+        "description": "Network analysis shows the unknown wallet interacted with Ricardo Diaz's known IP address shortly before the minting of counterfeits.",
+        "avaxConcept": "Blockchain network analysis",
+        "educationalLinks": [],
+        "difficulty": "hard"
+      },
+      {
+        "id": 6,
+        "description": "Anya Petrova's digital signature, usually embedded in her NFTs' metadata, is absent in the counterfeit versions.",
+        "avaxConcept": "NFT digital signatures and verification",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ],
+        "difficulty": "medium"
+      },
+      {
+        "id": 7,
+        "description": "Forensic analysis of the counterfeit NFTs' code reveals hidden comments with stylistic similarities to code known to be used by Kai Zhang.",
+        "avaxConcept": "Smart contract analysis",
+        "educationalLinks": [
+          {
+            "term": "Smart Contract",
+            "url": "https://docs.avax.network/learn/avalanche/smart-contracts",
+            "briefExplanation": "Self-executing contracts with terms written in code. Like a digital vending machine - you put money in, get the product out automatically."
+          },
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ],
+        "difficulty": "hard"
+      },
+      {
+        "id": 8,
+        "description": "Internal marketplace logs reveal unusual activity from Sergei Volkov's account shortly before the counterfeits appeared.",
+        "avaxConcept": "Marketplace data analysis",
+        "educationalLinks": [],
+        "difficulty": "medium"
+      },
+      {
+        "id": 9,
+        "description": "The unknown wallet used a sophisticated obfuscation technique to mask its location; however, a small oversight allowed investigators to link it to a known VPN server commonly used by Ricardo Diaz.",
+        "avaxConcept": "IP address tracking and VPN analysis",
+        "educationalLinks": [],
+        "difficulty": "hard"
+      },
+      {
+        "id": 10,
+        "description": "Analysis of Evelyn Reed's online activity shows no involvement with the minting of the counterfeit NFTs.",
+        "avaxConcept": "Social media and online activity analysis",
+        "educationalLinks": [
+          {
+            "term": "NFT (Non-Fungible Token)",
+            "url": "https://docs.avax.network/dapps/nfts",
+            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
+          }
+        ],
+        "difficulty": "easy"
+      },
+      {
+        "id": 11,
+        "description": "Mark Olsen's marketplace security logs reveal no indication of internal breaches related to the minting process.",
+        "avaxConcept": "System and network security logs",
+        "educationalLinks": [],
+        "difficulty": "medium"
+      }
+    ],
+    "solution": {
+      "culprit": "Ricardo Diaz",
+      "motive": "Financial gain through selling counterfeits",
+      "explanation": "The combination of clues 5 and 9 definitively link Ricardo Diaz to the unknown wallet used to mint the counterfeit NFTs. His technical expertise, as per his background, explains the sophistication of the operation and the use of obfuscation techniques.  While Kai Zhang’s code style is similar, the crucial metadata anomalies and lack of Anya Petrova’s signature point away from an attempt to directly copy her work.  Other suspects lacked the technical expertise or opportunity."
+    },
+    "educationalGoals": [
+      "Understanding NFT standards and metadata",
+      "Learning about blockchain forensics and digital provenance",
+      "Analyzing network data and tracing cryptocurrency transactions",
+      "Investigating NFT counterfeiting and its implications"
+    ],
+    "difficultyLevel": "advanced"
+  },
+  "raw": "json\n{\n  \"id\": \"AvalancheNFTForgery\",\n  \"title\": \"The Avalanche Avalanche: Counterfeit NFTs on the Blockchain\",\n  \"shortDescription\": \"Counterfeit NFTs flood Avalanche marketplaces, mirroring the style of renowned artist Anya Petrova.  Investigators must unravel the mystery using blockchain forensics, focusing on metadata inconsistencies and digital provenance.\",\n  \"victim\": {\n    \"name\": \"Anya Petrova\",\n    \"age\": 35,\n    \"background\": \"Renowned digital artist specializing in generative art and known for unique metadata embedded in her NFTs\",\n    \"avaxRole\": \"NFT Artist\"\n  },\n  \"suspects\": [\n    {\n      \"id\": 1,\n      \"name\": \"Anya Petrova\",\n      \"age\": 35,\n      \"background\": \"Renowned digital artist, original creator of the imitated NFTs\",\n      \"possibleMotive\": \"Insurance fraud or artificially inflating market value\",\n      \"avaxConnection\": \"Original NFT creator on Avalanche\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Mark Olsen\",\n      \"age\": 40,\n      \"background\": \"Operator of a prominent Avalanche NFT marketplace\",\n      \"possibleMotive\": \"Profiting from increased transaction fees or deliberately overlooking counterfeits\",\n      \"avaxConnection\": \"Marketplace owner\"\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Ricardo Diaz\",\n      \"age\": 28,\n      \"background\": \"Tech-savvy programmer specializing in blockchain technology and NFT standards\",\n      \"possibleMotive\": \"Financial gain through selling counterfeits or malicious intent\",\n      \"avaxConnection\": \"Independent Avalanche blockchain developer\"\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Evelyn Reed\",\n      \"age\": 32,\n      \"background\": \"Jealous art collector with a history of bidding wars against Anya Petrova\",\n      \"possibleMotive\": \"Damaging Petrova's reputation and potentially lowering the value of her genuine NFTs\",\n      \"avaxConnection\": \"High-profile Avalanche NFT collector\"\n    },\n    {\n      \"id\": 5,\n      \"name\": \"Kai Zhang\",\n      \"age\": 25,\n      \"background\": \"A rising star in the Avalanche NFT space; known for highly detailed imitations of existing works\",\n      \"possibleMotive\": \"Gaining popularity through imitation and generating quick profits.\",\n      \"avaxConnection\": \"Up-and-coming Avalanche NFT artist\"\n    },\n    {\n      \"id\": 6,\n      \"name\": \"Sergei Volkov\",\n      \"age\": 45,\n      \"background\": \"Former employee of Mark Olsen's marketplace, recently fired for undisclosed reasons\",\n      \"possibleMotive\": \"Revenge for his dismissal and to expose corruption in the marketplace.\",\n      \"avaxConnection\": \"Former employee of Olsen's Marketplace\"\n    }\n  ],\n  \"clues\": [\n    {\n      \"id\": 1,\n      \"description\": \"The counterfeit NFTs have identical image files but different metadata hashes compared to Anya's originals.\",\n      \"avaxConcept\": \"NFT metadata and hashing\",\n      \"difficulty\": \"medium\"\n    },\n    {\n      \"id\": 2,\n      \"description\": \"Blockchain analysis reveals the counterfeit NFTs were minted from a previously unknown wallet.\",\n      \"avaxConcept\": \"NFT minting and provenance on Avalanche\",\n      \"difficulty\": \"easy\"\n    },\n    {\n      \"id\": 3,\n      \"description\": \"The minting timestamps of the counterfeit NFTs are clustered within a short timeframe.\",\n      \"avaxConcept\": \"Blockchain timestamps and transaction analysis\",\n      \"difficulty\": \"easy\"\n    },\n    {\n      \"id\": 4,\n      \"description\": \"Examination of the metadata reveals subtle inconsistencies in color palettes not present in Petrova's works.\",\n      \"avaxConcept\": \"NFT metadata and image analysis\",\n      \"difficulty\": \"medium\"\n    },\n    {\n      \"id\": 5,\n      \"description\": \"Network analysis shows the unknown wallet interacted with Ricardo Diaz's known IP address shortly before the minting of counterfeits.\",\n      \"avaxConcept\": \"Blockchain network analysis\",\n      \"difficulty\": \"hard\"\n    },\n    {\n      \"id\": 6,\n      \"description\": \"Anya Petrova's digital signature, usually embedded in her NFTs' metadata, is absent in the counterfeit versions.\",\n      \"avaxConcept\": \"NFT digital signatures and verification\",\n      \"difficulty\": \"medium\"\n    },\n    {\n      \"id\": 7,\n      \"description\": \"Forensic analysis of the counterfeit NFTs' code reveals hidden comments with stylistic similarities to code known to be used by Kai Zhang.\",\n      \"avaxConcept\": \"Smart contract analysis\",\n      \"difficulty\": \"hard\"\n    },\n    {\n      \"id\": 8,\n      \"description\": \"Internal marketplace logs reveal unusual activity from Sergei Volkov's account shortly before the counterfeits appeared.\",\n      \"avaxConcept\": \"Marketplace data analysis\",\n      \"difficulty\": \"medium\"\n    },\n    {\n      \"id\": 9,\n      \"description\": \"The unknown wallet used a sophisticated obfuscation technique to mask its location; however, a small oversight allowed investigators to link it to a known VPN server commonly used by Ricardo Diaz.\",\n      \"avaxConcept\": \"IP address tracking and VPN analysis\",\n      \"difficulty\": \"hard\"\n    },\n    {\n      \"id\": 10,\n      \"description\": \"Analysis of Evelyn Reed's online activity shows no involvement with the minting of the counterfeit NFTs.\",\n      \"avaxConcept\": \"Social media and online activity analysis\",\n      \"difficulty\": \"easy\"\n    },\n    {\n      \"id\": 11,\n      \"description\": \"Mark Olsen's marketplace security logs reveal no indication of internal breaches related to the minting process.\",\n      \"avaxConcept\": \"System and network security logs\",\n      \"difficulty\": \"medium\"\n    }\n  ],\n  \"solution\": {\n    \"culprit\": \"Ricardo Diaz\",\n    \"motive\": \"Financial gain through selling counterfeits\",\n    \"explanation\": \"The combination of clues 5 and 9 definitively link Ricardo Diaz to the unknown wallet used to mint the counterfeit NFTs. His technical expertise, as per his background, explains the sophistication of the operation and the use of obfuscation techniques.  While Kai Zhang’s code style is similar, the crucial metadata anomalies and lack of Anya Petrova’s signature point away from an attempt to directly copy her work.  Other suspects lacked the technical expertise or opportunity.\"\n  },\n  \"educationalGoals\": [\n    \"Understanding NFT standards and metadata\",\n    \"Learning about blockchain forensics and digital provenance\",\n    \"Analyzing network data and tracing cryptocurrency transactions\",\n    \"Investigating NFT counterfeiting and its implications\"\n  ],\n  \"difficultyLevel\": \"advanced\"\n}\n\n",
+  "promptUsed": "\nCreate a mystery about counterfeit NFTs appearing on Avalanche marketplaces. Include suspects like the original artist, marketplace operator, a jealous collector, and a tech-savvy forger. Focus on NFT standards, metadata, and digital provenance.\n\nYou MUST produce a fully coherent case where story, suspects, clues, and solution logically connect. Each clue must help narrow suspects toward the final culprit; each suspect's background and motive must align with the shortDescription and solution.\n\nOutput STRICT JSON only (no markdown, no commentary). Use this exact schema:\n{\n  \"id\": string,\n  \"title\": string,\n  \"shortDescription\": string,\n  \"victim\": { \"name\": string, \"age\": number, \"background\": string, \"avaxRole\": string },\n  \"suspects\": [ { \"id\": number, \"name\": string, \"age\": number, \"background\": string, \"possibleMotive\": string, \"avaxConnection\": string } ],\n  \"clues\": [ { \"id\": number, \"description\": string, \"avaxConcept\": string, \"difficulty\": \"easy\"|\"medium\"|\"hard\" } ],\n  \"solution\": { \"culprit\": string, \"motive\": string, \"explanation\": string },\n  \"educationalGoals\": string[],\n  \"difficultyLevel\": \"beginner\"|\"intermediate\"|\"advanced\"\n}\n\nConstraints:\n- Tailor suspects and clues to the exact incident described.\n- Ensure the culprit is among suspects; clues justify the conclusion.\n- Difficulty is advanced.\n- Provide exactly 6 suspects (not more, not less) and at least 10 clues.\n"
+}
