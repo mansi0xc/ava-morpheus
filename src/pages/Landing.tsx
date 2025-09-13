@@ -103,7 +103,7 @@ export const Landing: React.FC = () => {
 
         {/* Enter Button */}
         <div className="animate-ornate-entrance" style={{ animationDelay: '0.6s' }}>
-          <Link to="/login">
+          <Link to="/catalog">
             <OrnateButton 
               variant="hero" 
               size="xl"
