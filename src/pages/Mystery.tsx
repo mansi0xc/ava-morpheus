@@ -1,105 +1,30 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
-import { OrnateCard, OrnateCardContent, OrnateCardHeader, OrnateCardTitle } from '@/components/ui/ornate-card';
-import { OrnateButton } from '@/components/ui/ornate-button';
-import { GearSpinner } from '@/components/steampunk/GearSpinner';
-import { Eye, MapPin, Clock, Lightbulb, Lock, Key } from 'lucide-react';
 import steampunkBg from '@/assets/steampunk-bg.jpg';
 
-interface MysteryNode {
-  id: string;
-  title: string;
-  description: string;
-  icon: any;
-  status: 'locked' | 'available' | 'solved';
-  connections: string[];
-  clue?: string;
-}
-
-const mysteryNodes: MysteryNode[] = [
-  {
-    id: 'clocktower',
-    title: 'The Clocktower Incident',
-    description: 'Strange mechanical sounds emanate from the abandoned clocktower',
-    icon: Clock,
-    status: 'available',
-    connections: ['workshop', 'journal'],
-    clue: 'The gears stopped at precisely 11:47...'
-  },
-  {
-    id: 'workshop',
-    title: 'Engineer\'s Workshop',
-    description: 'Tools scattered, blueprints torn, and a mysterious red substance',
-    icon: MapPin,
-    status: 'locked',
-    connections: ['clocktower', 'laboratory'],
-    clue: 'The red substance glows under steam pressure...'
-  },
-  {
-    id: 'journal',
-    title: 'Lost Journal',
-    description: 'Pages filled with frantic calculations and gear diagrams',
-    icon: Eye,
-    status: 'locked',
-    connections: ['clocktower', 'laboratory'],
-    clue: 'Entry 47: The Avalanche formula is almost complete...'
-  },
-  {
-    id: 'laboratory',
-    title: 'Secret Laboratory',
-    description: 'Hidden beneath the workshop, strange experiments continue',
-    icon: Lightbulb,
-    status: 'locked',
-    connections: ['workshop', 'journal', 'vault'],
-    clue: 'Steam-powered crystallization process discovered...'
-  },
-  {
-    id: 'vault',
-    title: 'The Crimson Vault',
-    description: 'A heavily secured chamber with avalanche-red crystals',
-    icon: Lock,
-    status: 'locked',
-    connections: ['laboratory'],
-    clue: 'The final piece of the Avalanche Engine...'
-  }
-];
-
 export const Mystery: React.FC = () => {
-  const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [solvedNodes, setSolvedNodes] = useState<Set<string>>(new Set());
+  const [selectedClue, setSelectedClue] = useState<number | null>(null);
 
-  const handleNodeClick = (nodeId: string) => {
-    const node = mysteryNodes.find(n => n.id === nodeId);
-    if (node && node.status === 'available') {
-      setSelectedNode(nodeId);
-    }
-  };
+  const mysteryNotes = [
+    { id: 1, title: 'The Brass Key', content: 'Found beneath the great clock tower...', x: 20, y: 30, color: 'red' },
+    { id: 2, title: 'Steam Patterns', content: 'The pipes spell out ancient symbols...', x: 60, y: 20, color: 'white' },
+    { id: 3, title: 'Gear Alignment', content: 'When all gears turn in harmony...', x: 30, y: 60, color: 'red' },
+    { id: 4, title: 'The Clockmaker', content: 'His signature appears on every piece...', x: 70, y: 70, color: 'white' },
+    { id: 5, title: 'Hidden Chamber', content: 'Behind the largest gear lies a secret...', x: 50, y: 45, color: 'red' },
+    { id: 6, title: 'Time Cipher', content: 'The clock hands point to more than time...', x: 80, y: 40, color: 'white' }
+  ];
 
-  const solveNode = (nodeId: string) => {
-    setSolvedNodes(prev => new Set([...prev, nodeId]));
-    setSelectedNode(null);
-    
-    // Unlock connected nodes
-    const node = mysteryNodes.find(n => n.id === nodeId);
-    if (node) {
-      node.connections.forEach(connectedId => {
-        const connectedNode = mysteryNodes.find(n => n.id === connectedId);
-        if (connectedNode && connectedNode.status === 'locked') {
-          connectedNode.status = 'available';
-        }
-      });
-    }
-  };
-
-  const getNodeStatus = (node: MysteryNode) => {
-    if (solvedNodes.has(node.id)) return 'solved';
-    return node.status;
-  };
-
-  const selectedNodeData = selectedNode ? mysteryNodes.find(n => n.id === selectedNode) : null;
+  const connections = [
+    { from: 1, to: 3 },
+    { from: 2, to: 5 },
+    { from: 3, to: 5 },
+    { from: 4, to: 6 },
+    { from: 5, to: 6 }
+  ];
 
   return (
-    <div 
+    <div
       className="min-h-screen steampunk-bg"
       style={{
         backgroundImage: `linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url(${steampunkBg})`,
@@ -109,190 +34,197 @@ export const Mystery: React.FC = () => {
       }}
     >
       <SteampunkNavbar />
-      
+
       <div className="pt-24 pb-16 px-4">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
-          <div className="text-center mb-16">
-            <h1 className="font-steampunk text-5xl md:text-6xl font-bold text-foreground glow-text mb-6">
-              MYSTERY BOARD
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1 }}
+          >
+            <h1
+              className="text-5xl mb-6 text-white"
+              style={{
+                fontFamily: 'serif',
+                textShadow: '0 0 20px #FFFFFF, 0 0 40px #E84142'
+              }}
+            >
+              THE GREAT MYSTERY
             </h1>
-            <p className="font-ornate text-xl text-muted-foreground max-w-3xl mx-auto">
-              Unravel the secrets of the Avalanche Engine through interconnected clues and mechanical mysteries. 
-              Each piece reveals part of the greater puzzle.
+            <div className="w-40 h-1 bg-gradient-to-r from-red-600 via-white to-red-600 mx-auto rounded-full"></div>
+            <p className="text-gray-300 mt-6 text-lg max-w-2xl mx-auto">
+              Uncover the secrets hidden within the clockwork. Each clue leads to another piece of the puzzle.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Mystery Network */}
-            <div className="lg:col-span-2">
-              <div className="relative min-h-[600px] p-8 border-2 border-primary rounded-ornate bg-surface/80 backdrop-blur-sm">
-                <h2 className="font-steampunk text-2xl font-bold text-foreground glow-text mb-8 text-center">
-                  INVESTIGATION NETWORK
-                </h2>
+          {/* Mystery Board */}
+          <motion.div
+            className="relative bg-black border-4 border-red-600 rounded-lg p-8 h-[600px] overflow-hidden shadow-2xl shadow-red-600/20"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.3 }}
+          >
+            {/* Corner Decorations */}
+            <div className="absolute -top-3 -left-3 w-6 h-6 bg-red-600 rounded-full shadow-lg shadow-red-600/50"></div>
+            <div className="absolute -top-3 -right-3 w-6 h-6 bg-white rounded-full shadow-lg shadow-white/50"></div>
+            <div className="absolute -bottom-3 -left-3 w-6 h-6 bg-white rounded-full shadow-white/50"></div>
+            <div className="absolute -bottom-3 -right-3 w-6 h-6 bg-red-600 rounded-full shadow-lg shadow-red-600/50"></div>
 
-                {/* Connection Lines */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
-                  {mysteryNodes.map(node => 
-                    node.connections.map(connId => {
-                      const connectedNode = mysteryNodes.find(n => n.id === connId);
-                      if (!connectedNode) return null;
-                      
-                      const isActive = getNodeStatus(node) !== 'locked' || getNodeStatus(connectedNode) !== 'locked';
-                      
-                      return (
-                        <line
-                          key={`${node.id}-${connId}`}
-                          x1="50%"
-                          y1="20%"
-                          x2="50%"
-                          y2="80%"
-                          stroke={isActive ? "hsl(var(--primary))" : "hsl(var(--muted))"}
-                          strokeWidth="2"
-                          className={isActive ? "animate-glow-pulse" : ""}
-                          opacity={isActive ? "0.8" : "0.3"}
-                        />
-                      );
-                    })
-                  )}
-                </svg>
+            {/* Glowing Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-white/5 rounded-lg"></div>
 
-                {/* Mystery Nodes */}
-                <div className="relative z-10 space-y-8">
-                  {mysteryNodes.map((node, index) => {
-                    const status = getNodeStatus(node);
-                    const IconComponent = node.icon;
-                    
-                    return (
-                      <div
-                        key={node.id}
-                        className={`absolute transition-all duration-300 ${
-                          status === 'available' ? 'cursor-pointer hover:scale-110' : ''
-                        }`}
-                        style={{
-                          left: `${20 + (index % 3) * 30}%`,
-                          top: `${20 + Math.floor(index / 3) * 25}%`,
-                        }}
-                        onClick={() => handleNodeClick(node.id)}
-                      >
-                        <div className={`
-                          relative p-4 rounded-ornate border-2 transition-all duration-300
-                          ${status === 'locked' && 'opacity-50 border-muted bg-muted/20'}
-                          ${status === 'available' && 'border-primary bg-surface shadow-glow hover:shadow-glow'}
-                          ${status === 'solved' && 'border-green-400 bg-green-400/20 shadow-glow'}
-                        `}>
-                          <div className="text-center">
-                            <div className="flex justify-center mb-2">
-                              {status === 'locked' ? (
-                                <Lock className="w-8 h-8 text-muted-foreground" />
-                              ) : (
-                                <IconComponent className={`w-8 h-8 ${
-                                  status === 'solved' ? 'text-green-400' : 'text-primary'
-                                }`} />
-                              )}
-                            </div>
-                            <h3 className={`font-steampunk text-sm font-bold ${
-                              status === 'locked' ? 'text-muted-foreground' : 
-                              status === 'solved' ? 'text-green-400' : 'text-foreground'
-                            }`}>
-                              {node.title}
-                            </h3>
-                            {status === 'solved' && (
-                              <div className="mt-2">
-                                <Key className="w-4 h-4 text-green-400 mx-auto" />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+            {/* Connection Lines */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none">
+              {connections.map((connection, index) => {
+                const fromNote = mysteryNotes.find(note => note.id === connection.from);
+                const toNote = mysteryNotes.find(note => note.id === connection.to);
+                if (!fromNote || !toNote) return null;
 
-                {/* Background Decorative Gears */}
-                <GearSpinner size="lg" className="absolute top-4 right-4 opacity-10 w-16 h-16" />
-                <GearSpinner size="md" reverse className="absolute bottom-4 left-4 opacity-15 w-12 h-12" />
-              </div>
-            </div>
+                return (
+                  <motion.line
+                    key={index}
+                    x1={`${fromNote.x}%`}
+                    y1={`${fromNote.y}%`}
+                    x2={`${toNote.x}%`}
+                    y2={`${toNote.y}%`}
+                    stroke="#E84142"
+                    strokeWidth="2"
+                    strokeDasharray="5,5"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 0.6 }}
+                    transition={{ duration: 2, delay: index * 0.3 }}
+                    style={{ filter: 'drop-shadow(0 0 5px #E84142)' }}
+                  />
+                );
+              })}
+            </svg>
 
-            {/* Investigation Panel */}
-            <div className="space-y-6">
-              {selectedNodeData ? (
-                <OrnateCard className="animate-ornate-entrance">
-                  <OrnateCardHeader>
-                    <div className="flex items-center space-x-3 mb-4">
-                      <selectedNodeData.icon className="w-8 h-8 text-primary" />
-                      <OrnateCardTitle className="text-lg">
-                        {selectedNodeData.title}
-                      </OrnateCardTitle>
-                    </div>
-                  </OrnateCardHeader>
-                  <OrnateCardContent className="space-y-4">
-                    <p className="font-ornate text-sm text-muted-foreground">
-                      {selectedNodeData.description}
-                    </p>
-                    
-                    {selectedNodeData.clue && (
-                      <div className="p-3 border border-primary/50 rounded bg-primary/10">
-                        <p className="font-ornate text-sm text-primary italic">
-                          "{selectedNodeData.clue}"
-                        </p>
-                      </div>
-                    )}
-                    
-                    <OrnateButton 
-                      variant="hero" 
-                      className="w-full"
-                      onClick={() => solveNode(selectedNodeData.id)}
+            {/* Mystery Notes */}
+            {mysteryNotes.map((note, index) => (
+              <motion.div
+                key={note.id}
+                className="absolute cursor-pointer"
+                style={{ left: `${note.x}%`, top: `${note.y}%` }}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: index * 0.2 }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                onClick={() => setSelectedClue(selectedClue === note.id ? null : note.id)}
+              >
+                <div
+                  className={`relative w-32 h-32 bg-black border-3 ${
+                    note.color === 'red' ? 'border-red-600' : 'border-white'
+                  } rounded-lg p-3 shadow-lg transform rotate-3 hover:rotate-0 transition-all duration-300 ${
+                    selectedClue === note.id ? 'scale-110 z-20' : ''
+                  }`}
+                >
+                  {/* Corner Gear */}
+                  <motion.div
+                    className={`absolute -top-2 -right-2 w-6 h-6 border-2 ${
+                      note.color === 'red' ? 'border-red-600' : 'border-white'
+                    } rounded-full`}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                    style={{
+                      background: `conic-gradient(from 0deg, transparent, ${
+                        note.color === 'red' ? '#E84142' : '#FFFFFF'
+                      }, transparent)`,
+                      clipPath:
+                        'polygon(50% 0%, 60% 35%, 100% 35%, 70% 57%, 85% 100%, 50% 75%, 15% 100%, 30% 57%, 0% 35%, 40% 35%)'
+                    }}
+                  />
+
+                  {/* Content */}
+                  <div className="relative z-10">
+                    <h3
+                      className={`text-sm mb-2 ${
+                        note.color === 'red' ? 'text-red-600' : 'text-white'
+                      }`}
+                      style={{ fontFamily: 'serif', textShadow: '0 0 10px currentColor' }}
                     >
-                      INVESTIGATE CLUE
-                    </OrnateButton>
-                  </OrnateCardContent>
-                </OrnateCard>
-              ) : (
-                <OrnateCard>
-                  <OrnateCardContent className="text-center space-y-4">
-                    <GearSpinner size="lg" className="mx-auto opacity-50" />
-                    <p className="font-ornate text-muted-foreground">
-                      Select a mystery node to begin your investigation
-                    </p>
-                  </OrnateCardContent>
-                </OrnateCard>
-              )}
-
-              {/* Progress Tracker */}
-              <OrnateCard>
-                <OrnateCardHeader>
-                  <OrnateCardTitle className="text-lg text-center">
-                    Investigation Progress
-                  </OrnateCardTitle>
-                </OrnateCardHeader>
-                <OrnateCardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Clues Solved:</span>
-                      <span className="text-primary font-bold">
-                        {solvedNodes.size} / {mysteryNodes.length}
-                      </span>
-                    </div>
-                    <div className="w-full bg-surface-elevated rounded-full h-3 border border-primary/50">
-                      <div 
-                        className="h-full bg-gradient-primary rounded-full transition-all duration-500"
-                        style={{ width: `${(solvedNodes.size / mysteryNodes.length) * 100}%` }}
-                      />
-                    </div>
-                    {solvedNodes.size === mysteryNodes.length && (
-                      <div className="text-center p-3 border border-green-400 rounded bg-green-400/20">
-                        <p className="font-steampunk text-green-400 font-bold glow-text">
-                          MYSTERY SOLVED!
-                        </p>
-                      </div>
-                    )}
+                      {note.title}
+                    </h3>
+                    <p className="text-xs text-gray-400 leading-tight">{note.content}</p>
                   </div>
-                </OrnateCardContent>
-              </OrnateCard>
+
+                  {/* Glowing Effect */}
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${
+                      note.color === 'red' ? 'from-red-600/20' : 'from-white/20'
+                    } to-transparent rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-300`}
+                  ></div>
+                </div>
+              </motion.div>
+            ))}
+
+            {/* Central Mystery Symbol */}
+            <motion.div
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 1.5 }}
+            >
+              <div className="relative w-20 h-20">
+                <motion.div
+                  className="w-full h-full border-4 border-red-600 rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+                  style={{
+                    background: `conic-gradient(from 0deg, transparent, #E84142, transparent)`,
+                    clipPath:
+                      'polygon(50% 0%, 60% 35%, 100% 35%, 70% 57%, 85% 100%, 50% 75%, 15% 100%, 30% 57%, 0% 35%, 40% 35%)'
+                  }}
+                />
+                <motion.div
+                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 border-3 border-white rounded-full"
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+                  style={{
+                    background: `conic-gradient(from 0deg, transparent, #FFFFFF, transparent)`,
+                    clipPath:
+                      'polygon(50% 0%, 60% 35%, 100% 35%, 70% 57%, 85% 100%, 50% 75%, 15% 100%, 30% 57%, 0% 35%, 40% 35%)'
+                  }}
+                />
+                <div
+                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs text-red-600"
+                  style={{ fontFamily: 'serif', textShadow: '0 0 10px #E84142' }}
+                >
+                  ?
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* Progress Indicator */}
+          <motion.div
+            className="text-center mt-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 2 }}
+          >
+            <div className="inline-flex items-center space-x-4 bg-black border-2 border-red-600 rounded-lg px-6 py-3">
+              <span className="text-white" style={{ fontFamily: 'serif' }}>
+                Mystery Progress:
+              </span>
+              <div className="w-32 h-2 bg-gray-800 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-red-600 to-white"
+                  initial={{ width: 0 }}
+                  animate={{ width: '35%' }}
+                  transition={{ duration: 2, delay: 2.5 }}
+                  style={{ boxShadow: '0 0 10px #E84142' }}
+                />
+              </div>
+              <span
+                className="text-red-600"
+                style={{ fontFamily: 'serif', textShadow: '0 0 10px #E84142' }}
+              >
+                35%
+              </span>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
@@ -300,3 +232,4 @@ export const Mystery: React.FC = () => {
 };
 
 export default Mystery;
+  
