@@ -126,12 +126,23 @@ export const GameCatalog: React.FC = () => {
                     </span>
                   </div>
                   
-                  <OrnateButton 
-                    variant="gear" 
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground"
-                  >
-                    ENTER GAME
-                  </OrnateButton>
+                  {game.id === 'sudoku' ? (
+                    <Link to="/games/sudoku">
+                      <OrnateButton 
+                        variant="gear" 
+                        className="w-full group-hover:bg-primary group-hover:text-primary-foreground"
+                      >
+                        ENTER GAME
+                      </OrnateButton>
+                    </Link>
+                  ) : (
+                    <OrnateButton 
+                      variant="gear" 
+                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground"
+                    >
+                      ENTER GAME
+                    </OrnateButton>
+                  )}
                 </OrnateCardContent>
               </OrnateCard>
             ))}
