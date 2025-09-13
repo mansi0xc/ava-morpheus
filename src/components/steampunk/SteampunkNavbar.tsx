@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User, ChevronDown, Cog, Package, MapPin, ShoppingCart } from 'lucide-react';
@@ -17,8 +18,8 @@ export const SteampunkNavbar: React.FC = () => {
   ];
 
   const profileItems = [
-    { name: 'Profile', icon: User },
-    { name: 'NFT Collection', icon: Package },
+    { name: 'Profile', icon: User, path: '/profile' },
+    { name: 'NFT Collection', icon: Package, path: '/nft-collection' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -75,13 +76,15 @@ export const SteampunkNavbar: React.FC = () => {
               <div className="absolute right-0 mt-2 w-48 bg-surface-elevated border-2 border-primary rounded-ornate shadow-glow">
                 <div className="py-2">
                   {profileItems.map((item) => (
-                    <button
+                    <Link
                       key={item.name}
+                      to={item.path}
                       className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-primary/20 flex items-center space-x-2 transition-colors"
+                      onClick={() => setIsProfileOpen(false)}
                     >
                       <item.icon className="w-4 h-4" />
                       <span>{item.name}</span>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>
