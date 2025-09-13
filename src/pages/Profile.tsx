@@ -6,8 +6,17 @@ import { OrnateFrame } from '@/components/steampunk/OrnateFrame';
 import { OrnateCard, OrnateCardContent, OrnateCardHeader, OrnateCardTitle } from '@/components/ui/ornate-card';
 import { OrnateButton } from '@/components/ui/ornate-button';
 import { GearSpinner } from '@/components/steampunk/GearSpinner';
+import { useAppSelector } from '@/store/hooks';
+import { selectWalletAddress } from '@/store/walletSlice';
 
-const Profile = () => {
+const Profile: React.FC = () => {
+  const walletAddress = useAppSelector(selectWalletAddress);
+
+  const formatAddress = (addr: string | null) => {
+    if (!addr) return 'No wallet connected';
+    if (addr.length <= 10) return addr;
+    return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
+  };
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Background elements */}
@@ -34,7 +43,8 @@ const Profile = () => {
               <h1 className="text-2xl font-steampunk font-bold text-foreground glow-text mb-2">
                 Inspector Holmes
               </h1>
-              <p className="text-muted-foreground mb-4 font-ornate">Master Detective</p>
+              {/* <p className="text-muted-foreground mb-4 font-ornate">Master Detective</p> */}
+              {formatAddress(walletAddress)}
               
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-center space-x-2 text-muted-foreground">
