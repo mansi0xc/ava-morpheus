@@ -109,7 +109,7 @@ useEffect(() => {
           <Link to="/" className="flex items-center space-x-2">
             <GearSpinner size="md" className="text-primary" />
             <span className="font-steampunk text-xl font-bold text-foreground glow-text">
-              AVALANCHE
+              Ava Morpheus
             </span>
           </Link>
 
