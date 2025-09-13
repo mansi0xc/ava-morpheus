@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Steampunk Design System with Avalanche Color Scheme
+All colors MUST be HSL.
+Avalanche Red: #E84142 → hsl(359, 79%, 58%)
+Black: #000000 → hsl(0, 0%, 0%)  
+White: #FFFFFF → hsl(0, 0%, 100%)
+*/
+
+@layer base {
+  :root {
+    /* Core Avalanche Colors */
+    --avalanche-red: 359 79% 58%;
+    --avalanche-black: 0 0% 0%;
+    --avalanche-white: 0 0% 100%;
+    
+    /* Background & Surface Colors */
+    --background: var(--avalanche-black);
+    --foreground: var(--avalanche-white);
+    --surface: 0 0% 5%;
+    --surface-elevated: 0 0% 8%;
+
+    /* Card & Popover Colors */
+    --card: var(--surface);
+    --card-foreground: var(--avalanche-white);
+    --popover: var(--surface-elevated);
+    --popover-foreground: var(--avalanche-white);
+
+    /* Primary Brand Colors */
+    --primary: var(--avalanche-red);
+    --primary-foreground: var(--avalanche-white);
+    --primary-glow: 359 79% 70%;
+
+    /* Secondary Colors */
+    --secondary: var(--surface-elevated);
+    --secondary-foreground: var(--avalanche-white);
+
+    /* Muted Colors */
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    /* Accent Colors */
+    --accent: var(--avalanche-red);
+    --accent-foreground: var(--avalanche-white);
+
+    /* Utility Colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: var(--avalanche-white);
+    --border: 0 0% 20%;
+    --input: var(--surface-elevated);
+    --ring: var(--avalanche-red);
+
+    /* Steampunk Specific Colors */
+    --brass: 43 74% 49%;
+    --brass-dark: 43 74% 35%;
+    --copper: 25 100% 50%;
+    --bronze: 30 50% 40%;
+    
+    /* Glowing Effects */
+    --glow-red: var(--avalanche-red);
+    --glow-white: var(--avalanche-white);
+    --glow-intensity: 0.6;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--avalanche-red)), hsl(var(--primary-glow)));
+    --gradient-ornate: linear-gradient(45deg, hsl(var(--surface)), hsl(var(--surface-elevated)), hsl(var(--surface)));
+    --gradient-glow: radial-gradient(circle, hsl(var(--avalanche-red) / 0.3), transparent);
+    
+    /* Shadows */
+    --shadow-glow: 0 0 20px hsl(var(--avalanche-red) / 0.5);
+    --shadow-ornate: 0 4px 15px hsl(var(--avalanche-black) / 0.8);
+    --shadow-inset: inset 0 2px 4px hsl(var(--avalanche-black) / 0.6);
+    
+    /* Border Radius */
+    --radius: 0.5rem;
+    --radius-ornate: 1rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Animation Keyframes for Steampunk Effects */
+  @keyframes gear-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  @keyframes glow-pulse {
+    0%, 100% { 
+      text-shadow: 0 0 5px hsl(var(--glow-red)), 
+                   0 0 10px hsl(var(--glow-red)), 
+                   0 0 15px hsl(var(--glow-red));
+    }
+    50% { 
+      text-shadow: 0 0 10px hsl(var(--glow-red)), 
+                   0 0 20px hsl(var(--glow-red)), 
+                   0 0 30px hsl(var(--glow-red));
+    }
+  }
+  
+  @keyframes border-glow {
+    0%, 100% { 
+      box-shadow: 0 0 5px hsl(var(--glow-red) / 0.5);
+    }
+    50% { 
+      box-shadow: 0 0 20px hsl(var(--glow-red) / 0.8);
+    }
+  }
+  
+  @keyframes ornate-entrance {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  
+  /* Utility Classes */
+  .gear-spin {
+    animation: gear-rotate 20s linear infinite;
+  }
+  
+  .gear-spin-reverse {
+    animation: gear-rotate 15s linear infinite reverse;
+  }
+  
+  .glow-text {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+  
+  .glow-border {
+    animation: border-glow 2s ease-in-out infinite;
+  }
+  
+  .ornate-frame {
+    background: hsl(var(--surface));
+    border: 2px solid hsl(var(--avalanche-red));
+    border-radius: var(--radius-ornate);
+    box-shadow: var(--shadow-glow), var(--shadow-ornate);
+    position: relative;
+  }
+  
+  .ornate-frame::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-ornate);
+    z-index: -1;
+    opacity: 0.7;
+  }
+  
+  .steampunk-bg {
+    background-color: hsl(var(--avalanche-black));
+    background-image: 
+      radial-gradient(circle at 25% 25%, hsl(var(--avalanche-red) / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, hsl(var(--avalanche-red) / 0.1) 0%, transparent 50%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
