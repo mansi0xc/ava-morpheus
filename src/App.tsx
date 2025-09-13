@@ -13,7 +13,7 @@ import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
 import NFTCollection from "./pages/NFTCollections";
 import NotFound from "./pages/NotFound";
-import { SudokuGame } from "./games/SudokuGame";
+import { SudokuGame } from '@/games/SudokuGame';
 
 const App = () => (
   <TooltipProvider>
