@@ -13,6 +13,7 @@ import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
 import NFTCollection from "./pages/NFTCollections";
 import NotFound from "./pages/NotFound";
+import { SudokuGame } from "./games/SudokuGame";
 
 const App = () => (
   <TooltipProvider>
@@ -37,6 +38,7 @@ const App = () => (
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/nft-collection" element={<NFTCollection />} />
+  <Route path="/games/sudoku" element={<SudokuGame />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
