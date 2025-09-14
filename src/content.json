@@ -101,131 +101,177 @@
       }
     ],
     "clues": [
+  {
+    "id": 1,
+    "title": "Hash Mismatch",
+    "description": "Forensic comparison shows the counterfeit NFTs share identical images with Anya’s originals, but the metadata hashes do not align.",
+    "avaxConcept": "NFT metadata and hashing",
+    "educationalLinks": [
       {
-        "id": 1,
-        "description": "The counterfeit NFTs have identical image files but different metadata hashes compared to Anya's originals.",
-        "avaxConcept": "NFT metadata and hashing",
-        "educationalLinks": [
-          {
-            "term": "NFT (Non-Fungible Token)",
-            "url": "https://docs.avax.network/dapps/nfts",
-            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
-          }
-        ],
-        "difficulty": "medium"
+        "term": "NFT Metadata",
+        "url": "https://docs.avax.network/dapps/nfts",
+        "briefExplanation": "Data that defines an NFT’s uniqueness, including traits, signatures, and hidden details."
       },
       {
-        "id": 2,
-        "description": "Blockchain analysis reveals the counterfeit NFTs were minted from a previously unknown wallet.",
-        "avaxConcept": "NFT minting and provenance on Avalanche",
-        "educationalLinks": [
-          {
-            "term": "NFT (Non-Fungible Token)",
-            "url": "https://docs.avax.network/dapps/nfts",
-            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
-          }
-        ],
-        "difficulty": "easy"
-      },
-      {
-        "id": 3,
-        "description": "The minting timestamps of the counterfeit NFTs are clustered within a short timeframe.",
-        "avaxConcept": "Blockchain timestamps and transaction analysis",
-        "educationalLinks": [
-          {
-            "term": "NFT (Non-Fungible Token)",
-            "url": "https://docs.avax.network/dapps/nfts",
-            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
-          }
-        ],
-        "difficulty": "easy"
-      },
-      {
-        "id": 4,
-        "description": "Examination of the metadata reveals subtle inconsistencies in color palettes not present in Petrova's works.",
-        "avaxConcept": "NFT metadata and image analysis",
-        "educationalLinks": [
-          {
-            "term": "NFT (Non-Fungible Token)",
-            "url": "https://docs.avax.network/dapps/nfts",
-            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
-          }
-        ],
-        "difficulty": "medium"
-      },
-      {
-        "id": 5,
-        "description": "Network analysis shows the unknown wallet interacted with Ricardo Diaz's known IP address shortly before the minting of counterfeits.",
-        "avaxConcept": "Blockchain network analysis",
-        "educationalLinks": [],
-        "difficulty": "hard"
-      },
-      {
-        "id": 6,
-        "description": "Anya Petrova's digital signature, usually embedded in her NFTs' metadata, is absent in the counterfeit versions.",
-        "avaxConcept": "NFT digital signatures and verification",
-        "educationalLinks": [
-          {
-            "term": "NFT (Non-Fungible Token)",
-            "url": "https://docs.avax.network/dapps/nfts",
-            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
-          }
-        ],
-        "difficulty": "medium"
-      },
-      {
-        "id": 7,
-        "description": "Forensic analysis of the counterfeit NFTs' code reveals hidden comments with stylistic similarities to code known to be used by Kai Zhang.",
-        "avaxConcept": "Smart contract analysis",
-        "educationalLinks": [
-          {
-            "term": "Smart Contract",
-            "url": "https://docs.avax.network/learn/avalanche/smart-contracts",
-            "briefExplanation": "Self-executing contracts with terms written in code. Like a digital vending machine - you put money in, get the product out automatically."
-          },
-          {
-            "term": "NFT (Non-Fungible Token)",
-            "url": "https://docs.avax.network/dapps/nfts",
-            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
-          }
-        ],
-        "difficulty": "hard"
-      },
-      {
-        "id": 8,
-        "description": "Internal marketplace logs reveal unusual activity from Sergei Volkov's account shortly before the counterfeits appeared.",
-        "avaxConcept": "Marketplace data analysis",
-        "educationalLinks": [],
-        "difficulty": "medium"
-      },
-      {
-        "id": 9,
-        "description": "The unknown wallet used a sophisticated obfuscation technique to mask its location; however, a small oversight allowed investigators to link it to a known VPN server commonly used by Ricardo Diaz.",
-        "avaxConcept": "IP address tracking and VPN analysis",
-        "educationalLinks": [],
-        "difficulty": "hard"
-      },
-      {
-        "id": 10,
-        "description": "Analysis of Evelyn Reed's online activity shows no involvement with the minting of the counterfeit NFTs.",
-        "avaxConcept": "Social media and online activity analysis",
-        "educationalLinks": [
-          {
-            "term": "NFT (Non-Fungible Token)",
-            "url": "https://docs.avax.network/dapps/nfts",
-            "briefExplanation": "Unique digital certificates of ownership. Like a digital certificate that proves you own an original artwork."
-          }
-        ],
-        "difficulty": "easy"
-      },
-      {
-        "id": 11,
-        "description": "Mark Olsen's marketplace security logs reveal no indication of internal breaches related to the minting process.",
-        "avaxConcept": "System and network security logs",
-        "educationalLinks": [],
-        "difficulty": "medium"
+        "term": "Hashing",
+        "url": "https://en.wikipedia.org/wiki/Cryptographic_hash_function",
+        "briefExplanation": "A one-way mathematical fingerprint for digital content. Even a small change creates a new hash."
       }
     ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 2,
+    "title": "Suspicious Wallet",
+    "description": "Blockchain explorers reveal that the counterfeits were minted from an unfamiliar wallet address never linked to Avalanche’s known artist ecosystem.",
+    "avaxConcept": "NFT minting and provenance",
+    "educationalLinks": [
+      {
+        "term": "NFT Minting",
+        "url": "https://support.opensea.io/hc/en-us/articles/1500011365841-What-is-minting-",
+        "briefExplanation": "The process of creating and registering a new NFT on the blockchain."
+      },
+      {
+        "term": "Provenance",
+        "url": "https://ethereum.org/en/developers/docs/standards/tokens/erc-721/",
+        "briefExplanation": "Blockchain-based history of ownership and authenticity."
+      }
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 3,
+    "title": "Clustered Timestamps",
+    "description": "Multiple counterfeit NFTs were minted in rapid succession within minutes, suggesting an automated batch process rather than organic creation.",
+    "avaxConcept": "Blockchain timestamps and transaction analysis",
+    "educationalLinks": [
+      {
+        "term": "Blockchain Timestamp",
+        "url": "https://academy.binance.com/en/articles/what-is-blockchain-technology",
+        "briefExplanation": "Every blockchain transaction is permanently recorded with a precise block time."
+      }
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 4,
+    "title": "Palette Inconsistencies",
+    "description": "Subtle but noticeable deviations in color palettes of the forged NFTs suggest artificial tampering with metadata-driven generative art.",
+    "avaxConcept": "NFT metadata and image analysis",
+    "educationalLinks": [
+      {
+        "term": "Generative Art",
+        "url": "https://en.wikipedia.org/wiki/Generative_art",
+        "briefExplanation": "Art created algorithmically, where small code changes alter the visual output."
+      }
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 5,
+    "title": "IP Connection",
+    "description": "Network traffic indicates that the suspicious wallet interacted with Ricardo Diaz’s known IP address shortly before the counterfeit minting occurred.",
+    "avaxConcept": "Blockchain network analysis",
+    "educationalLinks": [
+      {
+        "term": "Network Forensics",
+        "url": "https://en.wikipedia.org/wiki/Network_forensics",
+        "briefExplanation": "The monitoring and analysis of network traffic to gather digital evidence."
+      }
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 6,
+    "title": "Missing Signature",
+    "description": "Anya Petrova’s signature, normally embedded in the metadata of her NFTs, is absent from the counterfeit versions, undermining their authenticity.",
+    "avaxConcept": "NFT digital signatures and verification",
+    "educationalLinks": [
+      {
+        "term": "Digital Signatures",
+        "url": "https://en.wikipedia.org/wiki/Digital_signature",
+        "briefExplanation": "Cryptographic guarantees that content originates from the stated creator."
+      }
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 7,
+    "title": "Code Fingerprints",
+    "description": "Hidden comments in the counterfeit NFTs’ smart contracts match stylistic quirks often seen in Kai Zhang’s codebase.",
+    "avaxConcept": "Smart contract analysis",
+    "educationalLinks": [
+      {
+        "term": "Smart Contracts",
+        "url": "https://docs.avax.network/learn/avalanche/smart-contracts",
+        "briefExplanation": "Self-executing agreements stored on-chain; rules enforce themselves."
+      },
+      {
+        "term": "Code Stylometry",
+        "url": "https://en.wikipedia.org/wiki/Software_stylometry",
+        "briefExplanation": "The study of programming style patterns to identify authorship."
+      }
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 8,
+    "title": "Marketplace Logs",
+    "description": "Audit logs reveal unusual activity from Sergei Volkov’s old admin account, showing queries on Petrova’s NFTs before the counterfeits appeared.",
+    "avaxConcept": "Marketplace data analysis",
+    "educationalLinks": [
+      {
+        "term": "Audit Logs",
+        "url": "https://www.crowdstrike.com/cybersecurity-101/audit-log/",
+        "briefExplanation": "Chronological records of system activities, often used to detect insider threats."
+      }
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 9,
+    "title": "VPN Oversight",
+    "description": "The wallet used VPN obfuscation, but investigators traced a misconfigured packet that revealed links to a VPN server previously tied to Ricardo Diaz.",
+    "avaxConcept": "IP address tracking and VPN analysis",
+    "educationalLinks": [
+      {
+        "term": "VPN",
+        "url": "https://www.cloudflare.com/learning/security/glossary/what-is-a-vpn/",
+        "briefExplanation": "Virtual Private Networks mask a user’s location, but mistakes can still leak identifiers."
+      }
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 10,
+    "title": "Collector Cleared",
+    "description": "Investigators reviewed Evelyn Reed’s online activity and found no evidence linking her to the counterfeit NFTs’ minting.",
+    "avaxConcept": "Social media and online activity analysis",
+    "educationalLinks": [
+      {
+        "term": "OSINT",
+        "url": "https://en.wikipedia.org/wiki/Open-source_intelligence",
+        "briefExplanation": "Gathering publicly available information for investigative purposes."
+      }
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 11,
+    "title": "Clean Marketplace",
+    "description": "Security logs from Mark Olsen’s marketplace show no internal breach or tampering in the minting pipeline, ruling him out as the source.",
+    "avaxConcept": "System and network security logs",
+    "educationalLinks": [
+      {
+        "term": "Security Logs",
+        "url": "https://www.ibm.com/topics/security-information-and-event-management",
+        "briefExplanation": "Logs that record system activity, critical for detecting breaches or anomalies."
+      }
+    ],
+    "difficulty": "medium"
+  }
+],
+  
     "solution": {
       "culprit": "Ricardo Diaz",
       "motive": "Financial gain through selling counterfeits",
