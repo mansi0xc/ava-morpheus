@@ -4,146 +4,43 @@ import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { OrnateCard, OrnateCardContent, OrnateCardHeader, OrnateCardTitle } from '@/components/ui/ornate-card';
 import { OrnateButton } from '@/components/ui/ornate-button';
 import { GearSpinner } from '@/components/steampunk/GearSpinner';
-import { ShoppingCart, Star, Crown, Zap, Shield, Gem, Filter, SortAsc } from 'lucide-react';
+import { ShoppingCart, Flame, Eye, ShieldHalf, BookOpen } from 'lucide-react';
+import contentData from '@/content.json';
 
-interface MarketItem {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  currency: string;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
-  description: string;
-  stats?: { [key: string]: number };
-  icon: any;
-  inStock: number;
-  seller: string;
-}
+interface Powerup { id: string; name: string; effect: string; price: number; icon: any; }
+interface ContentClue { id: number; title: string; description: string; }
+interface ContentData { case: { clues: ContentClue[] } }
+const caseData = contentData as unknown as ContentData;
+const clueList: ContentClue[] = caseData.case?.clues || [];
 
-const marketItems: MarketItem[] = [
-  {
-    id: 'precision-gears',
-    name: 'Precision Gear Set',
-    category: 'Tools',
-    price: 150,
-    currency: 'AVAX',
-    rarity: 'rare',
-    description: 'Master-crafted gears that enhance mechanical precision by 25%',
-    stats: { Precision: 25, Durability: 18 },
-    icon: Crown,
-    inStock: 7,
-    seller: 'Master Cogsmith'
-  },
-  {
-    id: 'steam-booster',
-    name: 'Steam Pressure Booster',
-    category: 'Upgrades',
-    price: 89,
-    currency: 'AVAX',
-    rarity: 'epic',
-    description: 'Increases steam output efficiency for faster puzzle solving',
-    stats: { Speed: 30, Efficiency: 22 },
-    icon: Zap,
-    inStock: 3,
-    seller: 'Engineer Morrison'
-  },
-  {
-    id: 'ornate-frame',
-    name: 'Ornate Display Frame',
-    category: 'Cosmetics',
-    price: 45,
-    currency: 'AVAX',
-    rarity: 'common',
-    description: 'Decorative frame that showcases your achievements in style',
-    stats: { Prestige: 10 },
-    icon: Gem,
-    inStock: 12,
-    seller: 'Artisan Blackwood'
-  },
-  {
-    id: 'crimson-crystal',
-    name: 'Crimson Power Crystal',
-    category: 'Power Sources',
-    price: 350,
-    currency: 'AVAX',
-    rarity: 'legendary',
-    description: 'Rare crystal that amplifies all mechanical functions dramatically',
-    stats: { Power: 50, Stability: 45, Resonance: 30 },
-    icon: Shield,
-    inStock: 1,
-    seller: 'Crystal Merchant'
-  },
-  {
-    id: 'clockwork-compass',
-    name: 'Clockwork Navigation Compass',
-    category: 'Tools',
-    price: 120,
-    currency: 'AVAX',
-    rarity: 'rare',
-    description: 'Advanced compass that reveals hidden paths and secret areas',
-    stats: { Navigation: 35, Discovery: 20 },
-    icon: Crown,
-    inStock: 5,
-    seller: 'Explorer\'s Guild'
-  },
-  {
-    id: 'steam-badge',
-    name: 'Elite Engineer Badge',
-    category: 'Cosmetics',
-    price: 75,
-    currency: 'AVAX',
-    rarity: 'epic',
-    description: 'Prestigious badge that displays your engineering mastery',
-    stats: { Status: 25, Recognition: 30 },
-    icon: Star,
-    inStock: 8,
-    seller: 'Engineering Council'
-  }
+const powerups: Powerup[] = [
+  { id: 'crucible', name: "Elaine's Crucible", effect: 'Halves number of games needed to earn a clue.', price: 5, icon: Flame },
+  { id: 'chronos-eye', name: 'Eye of Chronos', effect: "Curse item: target player can't vote for 3 days.", price: 3, icon: Eye },
+  { id: 'void-core', name: 'Void Core', effect: "Defense item: nullifies all active curse effects.", price: 4, icon: ShieldHalf }
 ];
 
-const rarityColors = {
-  common: 'border-gray-400 text-gray-400 bg-gray-400/10',
-  rare: 'border-blue-400 text-blue-400 bg-blue-400/10',
-  epic: 'border-purple-400 text-purple-400 bg-purple-400/10',
-  legendary: 'border-yellow-400 text-yellow-400 bg-yellow-400/10'
-};
-
-const categories = ['all', ...Array.from(new Set(marketItems.map(item => item.category)))];
-
 export const Marketplace: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'price' | 'rarity' | 'name'>('name');
-  const [cart, setCart] = useState<Set<string>>(new Set());
   const { isConnected } = useAccount();
+  const [ownedPowerups, setOwnedPowerups] = useState<Set<string>>(new Set());
+  const [ownedClues, setOwnedClues] = useState<Set<number>>(new Set());
 
-  const filteredItems = marketItems.filter(item => 
-    selectedCategory === 'all' || item.category === selectedCategory
-  );
-
-  const sortedItems = [...filteredItems].sort((a, b) => {
-    if (sortBy === 'price') return a.price - b.price;
-    if (sortBy === 'rarity') {
-      const rarityOrder = { common: 1, rare: 2, epic: 3, legendary: 4 };
-      return rarityOrder[b.rarity] - rarityOrder[a.rarity];
-    }
-    return a.name.localeCompare(b.name);
-  });
-
-  const addToCart = (itemId: string) => {
-    if (!isConnected) return; // ignore when disconnected
-    setCart(prev => new Set([...prev, itemId]));
-  };
-
-  const removeFromCart = (itemId: string) => {
-    if (!isConnected) return; // ignore when disconnected
-    setCart(prev => {
-      const newCart = new Set(prev);
-      newCart.delete(itemId);
-      return newCart;
+  const togglePowerup = (id: string) => {
+    if (!isConnected) return;
+    setOwnedPowerups(prev => {
+      const copy = new Set(prev);
+      copy.has(id) ? copy.delete(id) : copy.add(id);
+      return copy;
     });
   };
 
-  const isInCart = (itemId: string) => cart.has(itemId);
+  const toggleClue = (id: number) => {
+    if (!isConnected) return;
+    setOwnedClues(prev => {
+      const copy = new Set(prev);
+      copy.has(id) ? copy.delete(id) : copy.add(id);
+      return copy;
+    });
+  };
 
   return (
     <div className="min-h-screen relative">
@@ -162,36 +59,32 @@ export const Marketplace: React.FC = () => {
             </p>
           </div>
 
-          {/* Filters and Sorting */}
-          <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
-            {/* Category Filter */}
-            <div className="flex flex-wrap gap-2">
-              <Filter className="w-5 h-5 text-primary mt-2 mr-2" />
-              {categories.map((category) => (
-                <OrnateButton
-                  key={category}
-                  variant={selectedCategory === category ? "hero" : "ghost"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className="capitalize"
-                >
-                  {category === 'all' ? 'All Items' : category}
-                </OrnateButton>
+          {/* Powerups Section */}
+          <div className="mb-12">
+            <h2 className="font-steampunk text-3xl font-bold text-foreground glow-text mb-6 text-center">Powerups</h2>
+            <p className="font-ornate text-center text-muted-foreground mb-8 max-w-2xl mx-auto text-sm">Strategic items that influence gameplay and progression. Purchase or relinquish (sell back) by toggling below. Selling simply removes ownership (no refund logic implemented yet).</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+              {powerups.map((p, idx) => (
+                <OrnateCard key={p.id} className="group transition-all duration-300 hover:scale-105 hover:shadow-glow animate-ornate-entrance" style={{ animationDelay: `${idx * 0.08}s` }}>
+                  <OrnateCardHeader className="text-center">
+                    <div className="flex justify-center mb-4">
+                      <div className="relative">
+                        <p.icon className="w-14 h-14 text-primary" />
+                        <GearSpinner size="sm" className="absolute -top-2 -right-2 opacity-50 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                    <OrnateCardTitle className="text-xl mb-2">{p.name}</OrnateCardTitle>
+                  </OrnateCardHeader>
+                  <OrnateCardContent className="space-y-4">
+                    <p className="font-ornate text-sm text-muted-foreground text-center">{p.effect}</p>
+                    <div className="text-center text-2xl font-steampunk font-bold text-primary glow-text">{p.price} <span className="text-sm text-muted-foreground ml-1">AVAX</span></div>
+                    <OrnateButton variant={ownedPowerups.has(p.id) ? 'hero' : 'gear'} className="w-full" onClick={() => togglePowerup(p.id)} disabled={!isConnected}>
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      {!isConnected ? 'Connect Wallet' : ownedPowerups.has(p.id) ? 'Sell' : 'Buy'}
+                    </OrnateButton>
+                  </OrnateCardContent>
+                </OrnateCard>
               ))}
-            </div>
-
-            {/* Sort Control */}
-            <div className="flex items-center space-x-2">
-              <SortAsc className="w-5 h-5 text-primary" />
-              <select 
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-surface border-2 border-primary rounded px-3 py-1 text-foreground text-sm"
-              >
-                <option value="name">Sort by Name</option>
-                <option value="price">Sort by Price</option>
-                <option value="rarity">Sort by Rarity</option>
-              </select>
             </div>
           </div>
 
@@ -204,136 +97,47 @@ export const Marketplace: React.FC = () => {
             </div>
           </div>
 
-          {/* Items Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
-            {sortedItems.map((item, index) => (
-              <OrnateCard 
-                key={item.id}
-                className="group transition-all duration-300 hover:scale-105 hover:shadow-glow animate-ornate-entrance"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <OrnateCardHeader className="text-center">
-                  {/* Rarity Badge */}
-                  <div className="flex justify-between items-start mb-4">
-                    <span className={`px-2 py-1 rounded text-xs font-bold border ${rarityColors[item.rarity]}`}>
-                      {item.rarity.toUpperCase()}
-                    </span>
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-400" />
-                      <span className="text-xs text-muted-foreground">in stock: {item.inStock}</span>
+          {/* Clue Exchange Section */}
+          <div className="mt-4">
+            <h2 className="font-steampunk text-3xl font-bold text-foreground glow-text mb-6 text-center">Clue Exchange</h2>
+            <p className="font-ornate text-center text-muted-foreground mb-8 max-w-2xl mx-auto text-sm">Acquire investigative clues (or relinquish ones you hold) to progress mysteries. Each clue is valued at <span className="text-primary font-semibold">0.2 AVAX</span>.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+              {clueList.map((c, idx) => (
+                <OrnateCard key={c.id} className="group transition-all duration-300 hover:shadow-glow animate-ornate-entrance" style={{ animationDelay: `${idx * 0.04}s` }}>
+                  <OrnateCardHeader className="cursor-pointer" onClick={() => toggleClue(c.id)}>
+                    <div className="flex items-start space-x-3">
+                      <BookOpen className="w-6 h-6 text-primary mt-1" />
+                      <div>
+                        <OrnateCardTitle className="text-lg">{c.title}</OrnateCardTitle>
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Item Icon */}
-                  <div className="flex justify-center mb-4">
-                    <div className="relative">
-                      <item.icon className="w-16 h-16 text-primary" />
-                      <GearSpinner 
-                        size="sm" 
-                        className="absolute -top-2 -right-2 opacity-50 group-hover:opacity-100 transition-opacity" 
-                      />
+                  </OrnateCardHeader>
+                  <OrnateCardContent className="pt-2">
+                    <div className="flex items-center justify-between mb-3 text-xs font-ornate">
+                      <span className="text-muted-foreground">Value: <span className="text-primary font-semibold">0.2 AVAX</span></span>
+                      <span className={`px-2 py-1 rounded border ${ownedClues.has(c.id) ? 'border-green-400 text-green-400' : 'border-primary/40 text-primary/70'}`}>{ownedClues.has(c.id) ? 'Owned' : 'Available'}</span>
                     </div>
-                  </div>
-
-                  <OrnateCardTitle className="text-xl mb-2">
-                    {item.name}
-                  </OrnateCardTitle>
-                </OrnateCardHeader>
-                
-                <OrnateCardContent className="space-y-4">
-                  <p className="font-ornate text-sm text-muted-foreground text-center">
-                    {item.description}
-                  </p>
-
-                  {/* Stats */}
-                  {item.stats && (
-                    <div className="space-y-2">
-                      <h4 className="font-steampunk text-sm font-bold text-primary">
-                        Statistics:
-                      </h4>
-                      {Object.entries(item.stats).map(([stat, value]) => (
-                        <div key={stat} className="flex justify-between items-center text-xs">
-                          <span className="text-muted-foreground">{stat}:</span>
-                          <span className="text-primary font-bold">+{value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Seller */}
-                  <div className="text-center text-xs text-muted-foreground border-t border-primary/30 pt-3">
-                    Sold by: <span className="text-primary">{item.seller}</span>
-                  </div>
-
-                  {/* Price and Actions */}
-                  <div className="space-y-3">
-                    <div className="text-center">
-                      <span className="text-2xl font-steampunk font-bold text-primary glow-text">
-                        {item.price}
-                      </span>
-                      <span className="text-sm text-muted-foreground ml-2">
-                        {item.currency}
-                      </span>
-                    </div>
-
-                    <div className="flex space-x-2">
-                      {isInCart(item.id) ? (
-                        <OrnateButton 
-                          variant="hero" 
-                          className="flex-1"
-                          onClick={() => removeFromCart(item.id)}
-                          disabled={!isConnected}
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-2" />
-                          {isConnected ? 'Remove' : 'Connect Wallet'}
-                        </OrnateButton>
-                      ) : (
-                        <OrnateButton 
-                          variant="gear" 
-                          className="flex-1"
-                          onClick={() => addToCart(item.id)}
-                          disabled={item.inStock === 0 || !isConnected}
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-2" />
-                          {!isConnected ? 'Connect Wallet' : item.inStock === 0 ? 'Out of Stock' : 'Buy'}
-                        </OrnateButton>
-                      )}
-                      <OrnateButton variant="ghost" size="icon">
-                        <Star className="w-4 h-4" />
-                      </OrnateButton>
-                    </div>
-                  </div>
-                </OrnateCardContent>
-              </OrnateCard>
-            ))}
+                    <OrnateButton variant={ownedClues.has(c.id) ? 'hero' : 'gear'} className="w-full" disabled={!isConnected} onClick={() => toggleClue(c.id)}>
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      {!isConnected ? 'Connect Wallet' : ownedClues.has(c.id) ? 'Sell' : 'Buy'}
+                    </OrnateButton>
+                  </OrnateCardContent>
+                </OrnateCard>
+              ))}
+            </div>
           </div>
 
-          {/* Cart Summary */}
-          {isConnected && cart.size > 0 && (
+          {/* Ownership Summary */}
+          {isConnected && (ownedPowerups.size > 0 || ownedClues.size > 0) && (
             <div className="fixed bottom-6 right-6 z-50">
               <OrnateCard className="min-w-[250px] animate-ornate-entrance">
-                <OrnateCardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-steampunk text-lg font-bold text-foreground glow-text">
-                      Cart
-                    </h3>
-                    <div className="flex items-center space-x-1">
-                      <ShoppingCart className="w-5 h-5 text-primary" />
-                      <span className="text-primary font-bold">{cart.size}</span>
-                    </div>
+                <OrnateCardContent className="space-y-4">
+                  <h3 className="font-steampunk text-lg font-bold text-foreground glow-text">Inventory</h3>
+                  <div className="space-y-2 text-xs font-ornate">
+                    <div className="flex justify-between"><span>Powerups:</span><span className="text-primary font-semibold">{ownedPowerups.size}</span></div>
+                    <div className="flex justify-between"><span>Clues:</span><span className="text-primary font-semibold">{ownedClues.size}</span></div>
                   </div>
-                  
-                  <div className="text-center">
-                    <div className="text-xl font-steampunk font-bold text-primary glow-text">
-                      {marketItems
-                        .filter(item => cart.has(item.id))
-                        .reduce((total, item) => total + item.price, 0)} AVAX
-                    </div>
-                  </div>
-                  
-                  <OrnateButton variant="hero" className="w-full">
-                    Proceed to Checkout
-                  </OrnateButton>
+                  <div className="text-[10px] text-muted-foreground">(Transaction + refund logic not yet implemented — this is a UI prototype.)</div>
                 </OrnateCardContent>
               </OrnateCard>
             </div>
