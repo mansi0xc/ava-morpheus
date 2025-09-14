@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
+import { useAccount } from 'wagmi';
 
 // Base fallback ornament (used if external avatar fails)
 import ornament from '@/assets/gear-ornament.png';
@@ -13,6 +14,11 @@ import content from '@/content.json';
 
 export const Mystery: React.FC = () => {
   const [selectedClue, setSelectedClue] = useState<number | null>(null);
+
+  // Owner gating via tracked wallet (wagmi)
+  const OWNER_ADDRESS = '0x603ab1b3e019f9b80ed0144d5abe68ebb1dc158a';
+  const { address } = useAccount();
+  const isOwner = (address ?? '').toLowerCase() === OWNER_ADDRESS;
 
   // Extract data from imported JSON structure
   const caseData = (content as any).case || {};
@@ -76,10 +82,21 @@ export const Mystery: React.FC = () => {
               THE GREAT MYSTERY
             </h1>
             <div className="w-40 h-1 bg-gradient-to-r from-red-600 via-white to-red-600 mx-auto rounded-full"></div>
-            {/* <p className="text-gray-300 mt-6 text-lg max-w-2xl mx-auto">
-              Uncover the secrets hidden within the clockwork. Each clue leads to another piece of the puzzle.
-            </p> */}
           </motion.div>
+
+          {/* Owner-only action */}
+          {isOwner && (
+            <div className="flex justify-end mb-6">
+              <a
+                href="/create-case"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-red-600 text-white hover:bg-red-600/10 shadow-md hover:shadow-red-600/40 transition"
+                aria-label="Create Case"
+              >
+                <span className="text-red-500 text-xl leading-none">+</span>
+                <span>Create Case</span>
+              </a>
+            </div>
+          )}
 
           {/* Storyline Description (moved outside the board, below headline) */}
           <motion.div
@@ -434,9 +451,20 @@ export const Mystery: React.FC = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* Owner-only floating Close Case button (lower-right) */}
+      {isOwner && (
+        <a
+          href="/close-case"
+          className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 px-4 py-3 rounded-full border-2 border-red-600 bg-black/80 text-white shadow-lg hover:bg-red-600/10 hover:shadow-red-600/40 transition"
+          aria-label="Close Case"
+        >
+          <span className="text-red-500 text-xl leading-none">×</span>
+          <span className="hidden sm:inline">Close Case</span>
+        </a>
+      )}
     </div>
   );
 };
 
 export default Mystery;
-  

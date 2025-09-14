@@ -80,4 +80,4 @@ export const abi = [
     }
 ];
 
-// export const address = "";
+export const address = "0xEA8Fdf5b6B29157f177B4Fe9234Caf2A684DAfa5";
