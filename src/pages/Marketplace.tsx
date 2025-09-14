@@ -1,11 +1,14 @@
-import React, { useEffect, useMemo } from 'react';
-import { useAccount } from 'wagmi';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { parseEther } from 'viem';
+
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { OrnateCard, OrnateCardContent, OrnateCardHeader, OrnateCardTitle } from '@/components/ui/ornate-card';
 import { OrnateButton } from '@/components/ui/ornate-button';
 import { GearSpinner } from '@/components/steampunk/GearSpinner';
 import { ShoppingCart, Flame, Eye, ShieldHalf, BookOpen } from 'lucide-react';
 import contentData from '@/content.json';
+import { abi as marketplaceAbi, address as marketplaceAddress } from '@/abi/Marketplace';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectInventoryFor, toggleClue, togglePowerup, migrateGuestToAddress } from '@/store/inventorySlice';
@@ -28,24 +31,90 @@ export const Marketplace: React.FC = () => {
   const { isConnected, address } = useAccount();
   const key = useMemo(() => addrOrGuest(address), [address]);
 
+  // Redux inventory (persistent)
   const dispatch = useAppDispatch();
   const inventory = useAppSelector((s) => selectInventoryFor(s, key));
   const ownedPowerups = new Set(inventory.powerups);
   const ownedClues = new Set(inventory.clues);
 
-  // When a user connects, migrate any guest inventory to their wallet (if wallet has none)
+  // Migrate guest inventory when user connects
   useEffect(() => {
     if (isConnected && address) {
       dispatch(migrateGuestToAddress({ address }));
     }
   }, [isConnected, address, dispatch]);
 
-  const onTogglePowerup = (id: string) => {
+  // ===== On-chain hooks (m8 branch) =====
+  const { writeContract: writeMarketplace, data: txHash } = useWriteContract();
+  const { isLoading: isPending, isSuccess } = useWaitForTransactionReceipt({ hash: txHash });
+
+  // Track which specific items are pending (so we can show spinners)
+  const [pendingPowerups, setPendingPowerups] = useState<Set<string>>(new Set());
+  const [pendingClues, setPendingClues] = useState<Set<number>>(new Set());
+
+  // ----- BUY handlers (on-chain); on success, persist to Redux -----
+  const handleBuyPowerup = async (id: string) => {
+    if (!isConnected || pendingPowerups.has(id)) return;
+    try {
+      setPendingPowerups(prev => new Set(prev).add(id));
+      writeMarketplace({
+        address: marketplaceAddress as `0x${string}`,
+        abi: marketplaceAbi,
+        functionName: 'payLarge',
+        value: parseEther('10'), // demo value
+      });
+    } catch (err) {
+      console.error('Error purchasing powerup:', err);
+      setPendingPowerups(prev => {
+        const copy = new Set(prev); copy.delete(id); return copy;
+      });
+    }
+  };
+
+  const handleBuyClue = async (id: number) => {
+    if (!isConnected || pendingClues.has(id)) return;
+    try {
+      setPendingClues(prev => new Set(prev).add(id));
+      writeMarketplace({
+        address: marketplaceAddress as `0x${string}`,
+        abi: marketplaceAbi,
+        functionName: 'paySmall',
+        value: parseEther('0.2'), // demo value
+      });
+    } catch (err) {
+      console.error('Error purchasing clue:', err);
+      setPendingClues(prev => {
+        const copy = new Set(prev); copy.delete(id); return copy;
+      });
+    }
+  };
+
+  // When the tx confirms, flip the corresponding item in Redux and clear pending
+  useEffect(() => {
+    if (!isSuccess || !txHash) return;
+
+    // Powerup success
+    if (pendingPowerups.size > 0) {
+      const id = Array.from(pendingPowerups)[0];
+      dispatch(togglePowerup({ address: key, id }));  // persist
+      setPendingPowerups(new Set());
+    }
+
+    // Clue success
+    if (pendingClues.size > 0) {
+      const id = Array.from(pendingClues)[0];
+      dispatch(toggleClue({ address: key, id }));     // persist
+      setPendingClues(new Set());
+    }
+  }, [isSuccess, txHash, pendingPowerups, pendingClues, dispatch, key]);
+
+  // ----- SELL handlers (UI prototype; immediate Redux toggle, no chain) -----
+  const handleSellPowerup = (id: string) => {
     if (!isConnected) return;
     dispatch(togglePowerup({ address: key, id }));
   };
 
-  const onToggleClue = (id: number) => {
+  const handleSellClue = (id: number) => {
     if (!isConnected) return;
     dispatch(toggleClue({ address: key, id }));
   };
@@ -75,7 +144,11 @@ export const Marketplace: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {powerups.map((p, idx) => (
-                <OrnateCard key={p.id} className="group transition-all duration-300 hover:scale-105 hover:shadow-glow animate-ornate-entrance" style={{ animationDelay: `${idx * 0.08}s` }}>
+                <OrnateCard
+                  key={p.id}
+                  className="group transition-all duration-300 hover:scale-105 hover:shadow-glow animate-ornate-entrance"
+                  style={{ animationDelay: `${idx * 0.08}s` }}
+                >
                   <OrnateCardHeader className="text-center">
                     <div className="flex justify-center mb-4">
                       <div className="relative">
@@ -85,19 +158,39 @@ export const Marketplace: React.FC = () => {
                     </div>
                     <OrnateCardTitle className="text-xl mb-2">{p.name}</OrnateCardTitle>
                   </OrnateCardHeader>
+
                   <OrnateCardContent className="space-y-4">
                     <p className="font-ornate text-sm text-muted-foreground text-center">{p.effect}</p>
                     <div className="text-center text-2xl font-steampunk font-bold text-primary glow-text">
                       {p.price} <span className="text-sm text-muted-foreground ml-1">AVAX</span>
                     </div>
+
+                    {/* ==== MERGED BUTTON (m8 + main) ==== */}
                     <OrnateButton
                       variant={ownedPowerups.has(p.id) ? 'hero' : 'gear'}
                       className="w-full"
-                      onClick={() => onTogglePowerup(p.id)}
-                      disabled={!isConnected}
+                      disabled={
+                        !isConnected ||
+                        pendingPowerups.has(p.id) ||
+                        isPending
+                      }
+                      onClick={() =>
+                        ownedPowerups.has(p.id)
+                          ? handleSellPowerup(p.id)       // immediate Redux toggle
+                          : handleBuyPowerup(p.id)        // on-chain, then Redux on success
+                      }
                     >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {!isConnected ? 'Connect Wallet' : ownedPowerups.has(p.id) ? 'Sell' : 'Buy'}
+                      {pendingPowerups.has(p.id) || (isPending && pendingPowerups.size > 0) ? (
+                        <>
+                          <GearSpinner size="xs" className="mr-2" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          {!isConnected ? 'Connect Wallet' : ownedPowerups.has(p.id) ? 'Sell' : 'Buy'}
+                        </>
+                      )}
                     </OrnateButton>
                   </OrnateCardContent>
                 </OrnateCard>
@@ -105,14 +198,7 @@ export const Marketplace: React.FC = () => {
             </div>
           </div>
 
-          {/* Decorative */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <GearSpinner size="xl" className="absolute top-32 right-16 opacity-10 w-32 h-32" />
-            <GearSpinner size="lg" reverse className="absolute bottom-40 left-20 opacity-15 w-24 h-24" />
-            <div className="absolute top-60 left-32 text-8xl font-steampunk text-primary/10 animate-glow-pulse">⚙</div>
-          </div>
-
-          {/* Clues */}
+          {/* Clue Exchange */}
           <div className="mt-4">
             <h2 className="font-steampunk text-3xl font-bold text-foreground glow-text mb-6 text-center">Clue Exchange</h2>
             <p className="font-ornate text-center text-muted-foreground mb-8 max-w-2xl mx-auto text-sm">
@@ -121,8 +207,15 @@ export const Marketplace: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {clueList.map((c, idx) => (
-                <OrnateCard key={c.id} className="group transition-all duration-300 hover:shadow-glow animate-ornate-entrance" style={{ animationDelay: `${idx * 0.04}s` }}>
-                  <OrnateCardHeader className="cursor-pointer" onClick={() => onToggleClue(c.id)}>
+                <OrnateCard
+                  key={c.id}
+                  className="group transition-all duration-300 hover:shadow-glow animate-ornate-entrance"
+                  style={{ animationDelay: `${idx * 0.04}s` }}
+                >
+                  <OrnateCardHeader className="cursor-pointer" onClick={() => {
+                    if (!isConnected) return;
+                    ownedClues.has(c.id) ? handleSellClue(c.id) : handleBuyClue(c.id);
+                  }}>
                     <div className="flex items-start space-x-3">
                       <BookOpen className="w-6 h-6 text-primary mt-1" />
                       <div>
@@ -130,6 +223,7 @@ export const Marketplace: React.FC = () => {
                       </div>
                     </div>
                   </OrnateCardHeader>
+
                   <OrnateCardContent className="pt-2">
                     <div className="flex items-center justify-between mb-3 text-xs font-ornate">
                       <span className="text-muted-foreground">
@@ -139,14 +233,33 @@ export const Marketplace: React.FC = () => {
                         {ownedClues.has(c.id) ? 'Owned' : 'Available'}
                       </span>
                     </div>
+
+                    {/* ==== MERGED BUTTON (m8 + main) ==== */}
                     <OrnateButton
                       variant={ownedClues.has(c.id) ? 'hero' : 'gear'}
                       className="w-full"
-                      disabled={!isConnected}
-                      onClick={() => onToggleClue(c.id)}
+                      disabled={
+                        !isConnected ||
+                        pendingClues.has(c.id) ||
+                        isPending
+                      }
+                      onClick={() =>
+                        ownedClues.has(c.id)
+                          ? handleSellClue(c.id)        // immediate Redux toggle
+                          : handleBuyClue(c.id)         // on-chain, then Redux on success
+                      }
                     >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {!isConnected ? 'Connect Wallet' : ownedClues.has(c.id) ? 'Sell' : 'Buy'}
+                      {pendingClues.has(c.id) || (isPending && pendingClues.size > 0) ? (
+                        <>
+                          <GearSpinner size="xs" className="mr-2" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          {!isConnected ? 'Connect Wallet' : ownedClues.has(c.id) ? 'Sell' : 'Buy'}
+                        </>
+                      )}
                     </OrnateButton>
                   </OrnateCardContent>
                 </OrnateCard>
