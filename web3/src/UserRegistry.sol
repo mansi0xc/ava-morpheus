@@ -43,4 +43,12 @@ contract UserRegistry {
     function getOwnedNFTs(address user) external view returns (uint256[] memory) {
         return users[user].ownedNFTs;
     }
+
+    function getTotalRewards(address user) external view returns (uint256) {
+        return users[user].totalRewards;
+    }
+
+    function getMysteriesParticipated(address user) external view returns (uint256) {
+        return users[user].mysteriesParticipated;
+    }
 }
