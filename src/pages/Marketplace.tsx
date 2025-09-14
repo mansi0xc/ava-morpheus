@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { parseEther } from 'viem';
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { OrnateCard, OrnateCardContent, OrnateCardHeader, OrnateCardTitle } from '@/components/ui/ornate-card';
 import { OrnateButton } from '@/components/ui/ornate-button';
 import { GearSpinner } from '@/components/steampunk/GearSpinner';
 import { ShoppingCart, Flame, Eye, ShieldHalf, BookOpen } from 'lucide-react';
 import contentData from '@/content.json';
+import { abi as marketplaceAbi, address as marketplaceAddress } from '@/abi/Marketplace';
 
 interface Powerup { id: string; name: string; effect: string; price: number; icon: any; }
 interface ContentClue { id: number; title: string; description: string; }
@@ -23,21 +25,103 @@ export const Marketplace: React.FC = () => {
   const { isConnected } = useAccount();
   const [ownedPowerups, setOwnedPowerups] = useState<Set<string>>(new Set());
   const [ownedClues, setOwnedClues] = useState<Set<number>>(new Set());
+  
+  // Track which items have pending transactions
+  const [pendingPowerups, setPendingPowerups] = useState<Set<string>>(new Set());
+  const [pendingClues, setPendingClues] = useState<Set<number>>(new Set());
 
-  const togglePowerup = (id: string) => {
+  // Contract interaction hooks
+  const { writeContract: writeMarketplace, data: txHash } = useWriteContract();
+  const { isLoading: isPending, isSuccess } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  // Handle powerup purchase (10 AVAX)
+  const handleBuyPowerup = async (id: string) => {
+    if (!isConnected || pendingPowerups.has(id)) return;
+    
+    try {
+      setPendingPowerups(prev => new Set(prev).add(id));
+      
+      writeMarketplace({
+        address: marketplaceAddress as `0x${string}`,
+        abi: marketplaceAbi,
+        functionName: 'payLarge',
+        value: parseEther('10'),
+      });
+      
+      // Note: The actual ownership update happens in the useEffect below
+      // after the transaction is confirmed
+    } catch (error) {
+      console.error('Error purchasing powerup:', error);
+      setPendingPowerups(prev => {
+        const copy = new Set(prev);
+        copy.delete(id);
+        return copy;
+      });
+    }
+  };
+
+  // Handle clue purchase (0.2 AVAX)
+  const handleBuyClue = async (id: number) => {
+    if (!isConnected || pendingClues.has(id)) return;
+    
+    try {
+      setPendingClues(prev => new Set(prev).add(id));
+      
+      writeMarketplace({
+        address: marketplaceAddress as `0x${string}`,
+        abi: marketplaceAbi,
+        functionName: 'paySmall',
+        value: parseEther('0.2'),
+      });
+      
+      // Note: The actual ownership update happens in the useEffect below
+      // after the transaction is confirmed
+    } catch (error) {
+      console.error('Error purchasing clue:', error);
+      setPendingClues(prev => {
+        const copy = new Set(prev);
+        copy.delete(id);
+        return copy;
+      });
+    }
+  };
+
+  // Update ownership after successful transaction
+  React.useEffect(() => {
+    if (isSuccess && txHash) {
+      // Update any pending powerups
+      if (pendingPowerups.size > 0) {
+        const powerupId = Array.from(pendingPowerups)[0];
+        setOwnedPowerups(prev => new Set(prev).add(powerupId));
+        setPendingPowerups(new Set());
+      }
+      
+      // Update any pending clues
+      if (pendingClues.size > 0) {
+        const clueId = Array.from(pendingClues)[0];
+        setOwnedClues(prev => new Set(prev).add(clueId));
+        setPendingClues(new Set());
+      }
+    }
+  }, [isSuccess, txHash, pendingPowerups, pendingClues]);
+
+  // Handle sell functionality (just UI, no blockchain interaction)
+  const handleSellPowerup = (id: string) => {
     if (!isConnected) return;
     setOwnedPowerups(prev => {
       const copy = new Set(prev);
-      copy.has(id) ? copy.delete(id) : copy.add(id);
+      copy.delete(id);
       return copy;
     });
   };
 
-  const toggleClue = (id: number) => {
+  const handleSellClue = (id: number) => {
     if (!isConnected) return;
     setOwnedClues(prev => {
       const copy = new Set(prev);
-      copy.has(id) ? copy.delete(id) : copy.add(id);
+      copy.delete(id);
       return copy;
     });
   };
@@ -78,9 +162,23 @@ export const Marketplace: React.FC = () => {
                   <OrnateCardContent className="space-y-4">
                     <p className="font-ornate text-sm text-muted-foreground text-center">{p.effect}</p>
                     <div className="text-center text-2xl font-steampunk font-bold text-primary glow-text">{p.price} <span className="text-sm text-muted-foreground ml-1">AVAX</span></div>
-                    <OrnateButton variant={ownedPowerups.has(p.id) ? 'hero' : 'gear'} className="w-full" onClick={() => togglePowerup(p.id)} disabled={!isConnected}>
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {!isConnected ? 'Connect Wallet' : ownedPowerups.has(p.id) ? 'Sell' : 'Buy'}
+                    <OrnateButton 
+                      variant={ownedPowerups.has(p.id) ? 'hero' : 'gear'} 
+                      className="w-full" 
+                      onClick={() => ownedPowerups.has(p.id) ? handleSellPowerup(p.id) : handleBuyPowerup(p.id)} 
+                      disabled={!isConnected || pendingPowerups.has(p.id) || isPending}
+                    >
+                      {pendingPowerups.has(p.id) || (isPending && pendingPowerups.size > 0) ? (
+                        <>
+                          <GearSpinner size="xs" className="mr-2" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          {!isConnected ? 'Connect Wallet' : ownedPowerups.has(p.id) ? 'Sell' : 'Buy'}
+                        </>
+                      )}
                     </OrnateButton>
                   </OrnateCardContent>
                 </OrnateCard>
@@ -104,7 +202,7 @@ export const Marketplace: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {clueList.map((c, idx) => (
                 <OrnateCard key={c.id} className="group transition-all duration-300 hover:shadow-glow animate-ornate-entrance" style={{ animationDelay: `${idx * 0.04}s` }}>
-                  <OrnateCardHeader className="cursor-pointer" onClick={() => toggleClue(c.id)}>
+                  <OrnateCardHeader>
                     <div className="flex items-start space-x-3">
                       <BookOpen className="w-6 h-6 text-primary mt-1" />
                       <div>
@@ -117,9 +215,23 @@ export const Marketplace: React.FC = () => {
                       <span className="text-muted-foreground">Value: <span className="text-primary font-semibold">0.2 AVAX</span></span>
                       <span className={`px-2 py-1 rounded border ${ownedClues.has(c.id) ? 'border-green-400 text-green-400' : 'border-primary/40 text-primary/70'}`}>{ownedClues.has(c.id) ? 'Owned' : 'Available'}</span>
                     </div>
-                    <OrnateButton variant={ownedClues.has(c.id) ? 'hero' : 'gear'} className="w-full" disabled={!isConnected} onClick={() => toggleClue(c.id)}>
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {!isConnected ? 'Connect Wallet' : ownedClues.has(c.id) ? 'Sell' : 'Buy'}
+                    <OrnateButton 
+                      variant={ownedClues.has(c.id) ? 'hero' : 'gear'} 
+                      className="w-full" 
+                      disabled={!isConnected || pendingClues.has(c.id) || isPending}
+                      onClick={() => ownedClues.has(c.id) ? handleSellClue(c.id) : handleBuyClue(c.id)}
+                    >
+                      {pendingClues.has(c.id) || (isPending && pendingClues.size > 0) ? (
+                        <>
+                          <GearSpinner size="xs" className="mr-2" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          {!isConnected ? 'Connect Wallet' : ownedClues.has(c.id) ? 'Sell' : 'Buy'}
+                        </>
+                      )}
                     </OrnateButton>
                   </OrnateCardContent>
                 </OrnateCard>
@@ -137,7 +249,7 @@ export const Marketplace: React.FC = () => {
                     <div className="flex justify-between"><span>Powerups:</span><span className="text-primary font-semibold">{ownedPowerups.size}</span></div>
                     <div className="flex justify-between"><span>Clues:</span><span className="text-primary font-semibold">{ownedClues.size}</span></div>
                   </div>
-                  <div className="text-[10px] text-muted-foreground">(Transaction + refund logic not yet implemented — this is a UI prototype.)</div>
+                  <div className="text-[10px] text-muted-foreground">Real blockchain transactions for purchases. Selling is UI-only (no refunds).</div>
                 </OrnateCardContent>
               </OrnateCard>
             </div>
