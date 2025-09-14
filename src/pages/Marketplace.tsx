@@ -20,9 +20,9 @@ const caseData = contentData as unknown as ContentData;
 const clueList: ContentClue[] = caseData.case?.clues || [];
 
 const powerups: Powerup[] = [
-  { id: 'crucible', name: "Elaine's Crucible", effect: 'Halves number of games needed to earn a clue.', price: 5, icon: Flame },
-  { id: 'chronos-eye', name: 'Eye of Chronos', effect: "Curse item: target player can't vote for 3 days.", price: 3, icon: Eye },
-  { id: 'void-core', name: 'Void Core', effect: "Defense item: nullifies all active curse effects.", price: 4, icon: ShieldHalf },
+  { id: 'crucible', name: "Elaine's Crucible", effect: 'Halves number of games needed to earn a clue.', price: 10, icon: Flame },
+  { id: 'chronos-eye', name: 'Eye of Chronos', effect: "Curse item: target player can't vote for 3 days.", price: 10, icon: Eye },
+  { id: 'void-core', name: 'Void Core', effect: "Defense item: nullifies all active curse effects.", price: 10, icon: ShieldHalf },
 ];
 
 const addrOrGuest = (addr?: string) => addr ?? 'guest';
@@ -45,8 +45,10 @@ export const Marketplace: React.FC = () => {
   }, [isConnected, address, dispatch]);
 
   // ===== On-chain hooks (m8 branch) =====
-  const { writeContract: writeMarketplace, data: txHash } = useWriteContract();
-  const { isLoading: isPending, isSuccess } = useWaitForTransactionReceipt({ hash: txHash });
+  // Use writeContractAsync so we can await and catch rejections
+  const { writeContractAsync } = useWriteContract();
+  const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
+  const { isLoading: isPending, isSuccess, isError } = useWaitForTransactionReceipt({ hash: txHash });
 
   // Track which specific items are pending (so we can show spinners)
   const [pendingPowerups, setPendingPowerups] = useState<Set<string>>(new Set());
@@ -57,13 +59,17 @@ export const Marketplace: React.FC = () => {
     if (!isConnected || pendingPowerups.has(id)) return;
     try {
       setPendingPowerups(prev => new Set(prev).add(id));
-      writeMarketplace({
+      const hash = await writeContractAsync({
         address: marketplaceAddress as `0x${string}`,
         abi: marketplaceAbi,
         functionName: 'payLarge',
-        value: parseEther('10'), // demo value
+        args: [],
+        account: address as `0x${string}` | undefined,
+        value: parseEther('10'),
       });
+      setTxHash(hash);
     } catch (err) {
+      // User rejected or send error -> clear pending immediately
       console.error('Error purchasing powerup:', err);
       setPendingPowerups(prev => {
         const copy = new Set(prev); copy.delete(id); return copy;
@@ -75,13 +81,17 @@ export const Marketplace: React.FC = () => {
     if (!isConnected || pendingClues.has(id)) return;
     try {
       setPendingClues(prev => new Set(prev).add(id));
-      writeMarketplace({
+      const hash = await writeContractAsync({
         address: marketplaceAddress as `0x${string}`,
         abi: marketplaceAbi,
         functionName: 'paySmall',
-        value: parseEther('0.2'), // demo value
+        args: [],
+        account: address as `0x${string}` | undefined,
+        value: parseEther('0.2'),
       });
+      setTxHash(hash);
     } catch (err) {
+      // User rejected or send error -> clear pending immediately
       console.error('Error purchasing clue:', err);
       setPendingClues(prev => {
         const copy = new Set(prev); copy.delete(id); return copy;
@@ -96,28 +106,32 @@ export const Marketplace: React.FC = () => {
     // Powerup success
     if (pendingPowerups.size > 0) {
       const id = Array.from(pendingPowerups)[0];
-      dispatch(togglePowerup({ address: key, id }));  // persist
+      dispatch(togglePowerup({ address: key, id }));  // persist ownership
       setPendingPowerups(new Set());
     }
 
     // Clue success
     if (pendingClues.size > 0) {
       const id = Array.from(pendingClues)[0];
-      dispatch(toggleClue({ address: key, id }));     // persist
+      dispatch(toggleClue({ address: key, id }));     // persist ownership
       setPendingClues(new Set());
     }
+
+    // Clear tracked hash
+    setTxHash(undefined);
   }, [isSuccess, txHash, pendingPowerups, pendingClues, dispatch, key]);
 
-  // ----- SELL handlers (UI prototype; immediate Redux toggle, no chain) -----
-  const handleSellPowerup = (id: string) => {
-    if (!isConnected) return;
-    dispatch(togglePowerup({ address: key, id }));
-  };
+  // If a sent tx fails (revert), clear pending and reset hash
+  useEffect(() => {
+    if (!isError) return;
+    setPendingPowerups(new Set());
+    setPendingClues(new Set());
+    setTxHash(undefined);
+  }, [isError]);
 
-  const handleSellClue = (id: number) => {
-    if (!isConnected) return;
-    dispatch(toggleClue({ address: key, id }));
-  };
+  // ----- SELL handlers removed from UI (no selling) -----
+  // const handleSellPowerup = (id: string) => { ... }
+  // const handleSellClue = (id: number) => { ... }
 
   return (
     <div className="min-h-screen relative">
@@ -167,28 +181,30 @@ export const Marketplace: React.FC = () => {
 
                     {/* ==== MERGED BUTTON (m8 + main) ==== */}
                     <OrnateButton
+                      // No Sell option: when owned, show disabled 'Owned'
                       variant={ownedPowerups.has(p.id) ? 'hero' : 'gear'}
                       className="w-full"
                       disabled={
                         !isConnected ||
+                        ownedPowerups.has(p.id) ||
                         pendingPowerups.has(p.id) ||
                         isPending
                       }
-                      onClick={() =>
-                        ownedPowerups.has(p.id)
-                          ? handleSellPowerup(p.id)       // immediate Redux toggle
-                          : handleBuyPowerup(p.id)        // on-chain, then Redux on success
-                      }
+                      onClick={() => {
+                        if (!ownedPowerups.has(p.id)) handleBuyPowerup(p.id);
+                      }}
                     >
-                      {pendingPowerups.has(p.id) || (isPending && pendingPowerups.size > 0) ? (
+                      {pendingPowerups.has(p.id) ? (
                         <>
                           <GearSpinner size="xs" className="mr-2" />
                           Processing...
                         </>
+                      ) : ownedPowerups.has(p.id) ? (
+                        <>Owned</>
                       ) : (
                         <>
                           <ShoppingCart className="w-4 h-4 mr-2" />
-                          {!isConnected ? 'Connect Wallet' : ownedPowerups.has(p.id) ? 'Sell' : 'Buy'}
+                          {!isConnected ? 'Connect Wallet' : 'Buy'}
                         </>
                       )}
                     </OrnateButton>
@@ -212,10 +228,8 @@ export const Marketplace: React.FC = () => {
                   className="group transition-all duration-300 hover:shadow-glow animate-ornate-entrance"
                   style={{ animationDelay: `${idx * 0.04}s` }}
                 >
-                  <OrnateCardHeader className="cursor-pointer" onClick={() => {
-                    if (!isConnected) return;
-                    ownedClues.has(c.id) ? handleSellClue(c.id) : handleBuyClue(c.id);
-                  }}>
+                  {/* Remove header click that used to sell/buy */}
+                  <OrnateCardHeader>
                     <div className="flex items-start space-x-3">
                       <BookOpen className="w-6 h-6 text-primary mt-1" />
                       <div>
@@ -236,28 +250,30 @@ export const Marketplace: React.FC = () => {
 
                     {/* ==== MERGED BUTTON (m8 + main) ==== */}
                     <OrnateButton
+                      // No Sell option: when owned, show disabled 'Owned'
                       variant={ownedClues.has(c.id) ? 'hero' : 'gear'}
                       className="w-full"
                       disabled={
                         !isConnected ||
+                        ownedClues.has(c.id) ||
                         pendingClues.has(c.id) ||
                         isPending
                       }
-                      onClick={() =>
-                        ownedClues.has(c.id)
-                          ? handleSellClue(c.id)        // immediate Redux toggle
-                          : handleBuyClue(c.id)         // on-chain, then Redux on success
-                      }
+                      onClick={() => {
+                        if (!ownedClues.has(c.id)) handleBuyClue(c.id);
+                      }}
                     >
-                      {pendingClues.has(c.id) || (isPending && pendingClues.size > 0) ? (
+                      {pendingClues.has(c.id) ? (
                         <>
                           <GearSpinner size="xs" className="mr-2" />
                           Processing...
                         </>
+                      ) : ownedClues.has(c.id) ? (
+                        <>Owned</>
                       ) : (
                         <>
                           <ShoppingCart className="w-4 h-4 mr-2" />
-                          {!isConnected ? 'Connect Wallet' : ownedClues.has(c.id) ? 'Sell' : 'Buy'}
+                          {!isConnected ? 'Connect Wallet' : 'Buy'}
                         </>
                       )}
                     </OrnateButton>
@@ -268,6 +284,7 @@ export const Marketplace: React.FC = () => {
           </div>
 
           {/* Inventory summary */}
+          {/* Optional: update footnote since selling is disabled */}
           {isConnected && (ownedPowerups.size > 0 || ownedClues.size > 0) && (
             <div className="fixed bottom-6 right-6 z-50">
               <OrnateCard className="min-w-[250px] animate-ornate-entrance">
