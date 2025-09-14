@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { postActivity } from "@/lib/api";
 import { useAppSelector } from '@/store/hooks';
 import { selectWalletAddress } from '@/store/walletSlice';
+import { incrementGamesPlayed } from '@/lib/progress';
 
 
 // (Typing effect removed per refactor: UI streamlined to immediate gameplay)
@@ -208,7 +209,7 @@ const postedRef = useRef(false);
     if (isComplete) {
       setEndTime(Date.now());
       setIsGameComplete(true);
-      // Completed
+      if (walletAddress) incrementGamesPlayed(walletAddress);
     }
     if (isComplete) {
   const completion = {
