@@ -7,7 +7,7 @@ import "../src/MysteryCaseManager.sol";
 contract DeployMysteryCase is Script {
     function run() external {
         vm.startBroadcast();
-        new MysteryCaseManager(0x31893F27c8461f68a1088e3208ff2edb6Bd0934F, 0xe1c84b7e216bc78F0A9Bc8D045aa4e7e37cB46Eb, 0xCe99350839F672286885aa0626372575B671e57E);
+        new MysteryCaseManager(0xfD4dfA0279Dc5466ead1733Ab4b96b817f9Bb6Cb, 0xEA8Fdf5b6B29157f177B4Fe9234Caf2A684DAfa5, 0xCe99350839F672286885aa0626372575B671e57E);
         vm.stopBroadcast();
     }
 }
