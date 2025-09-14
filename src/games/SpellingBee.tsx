@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useAccount } from 'wagmi';
+import { incrementGamesPlayed } from '@/lib/progress';
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { Component as RaycastBackground } from '@/components/raycast-animated-background';
 import { Link } from 'react-router-dom';
@@ -111,6 +113,7 @@ export default function SpellingBee({ wordList, initialLetters }: Props) {
   const [recentInvalid, setRecentInvalid] = useState<string | null>(null); // used for simple animation class toggle
   const [timeLeft, setTimeLeft] = useState<number>(30);
   const [gameOver, setGameOver] = useState<boolean>(false);
+  const { address } = useAccount();
 
   // persist to localStorage (optional)
   useEffect(() => {
@@ -140,11 +143,12 @@ export default function SpellingBee({ wordList, initialLetters }: Props) {
     if (gameOver) return;
     if (timeLeft <= 0) {
       setGameOver(true);
+      if (address) incrementGamesPlayed(address);
       return;
     }
     const id = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(id);
-  }, [timeLeft, gameOver]);
+  }, [timeLeft, gameOver, address]);
 
   // --- helpers
   const letterSet = useMemo(() => new Set(letters), [letters]);

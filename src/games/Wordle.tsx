@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { Component as RaycastBackground } from '@/components/raycast-animated-background';
 import { Link } from 'react-router-dom';
+import { useAccount } from 'wagmi';
+import { incrementGamesPlayed } from '@/lib/progress';
 
 // Word list (for demo; you can expand this)
 const WORDS = ["REACT", "CODES", "GAMES", "WORDS", "TAILS", "SUDOKU", "SOLVE"];
@@ -28,6 +30,14 @@ const Wordle: React.FC = () => {
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
   const [shakeRow, setShakeRow] = useState<number | null>(null);
+
+  const { address } = useAccount();
+
+  const recordCompletionOnce = useCallback(() => {
+    // simple guard: use a ref? lightweight inline check with gameOver state transitions
+    // We'll rely on gameOver just being set once per outcome; if needed, could add a ref.
+    if (address) incrementGamesPlayed(address);
+  }, [address]);
 
   const startNewGame = useCallback(() => {
     setSolution(getRandomWord());
@@ -125,9 +135,11 @@ const Wordle: React.FC = () => {
         if (currentGuess === solution) {
           setGameOver(true);
           setMessage("You Win!");
+          recordCompletionOnce();
         } else if (currentGuessIndex + 1 === MAX_TRIES) {
           setGameOver(true);
           setMessage(`Game Over! Word was ${solution}`);
+          recordCompletionOnce();
         } else {
           setCurrentGuessIndex(currentGuessIndex + 1);
           setCurrentGuess("");
