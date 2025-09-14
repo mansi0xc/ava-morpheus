@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { OrnateCard, OrnateCardContent, OrnateCardHeader, OrnateCardTitle } from '@/components/ui/ornate-card';
@@ -6,6 +6,9 @@ import { OrnateButton } from '@/components/ui/ornate-button';
 import { GearSpinner } from '@/components/steampunk/GearSpinner';
 import { ShoppingCart, Flame, Eye, ShieldHalf, BookOpen } from 'lucide-react';
 import contentData from '@/content.json';
+
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { selectInventoryFor, toggleClue, togglePowerup, migrateGuestToAddress } from '@/store/inventorySlice';
 
 interface Powerup { id: string; name: string; effect: string; price: number; icon: any; }
 interface ContentClue { id: number; title: string; description: string; }
@@ -16,53 +19,60 @@ const clueList: ContentClue[] = caseData.case?.clues || [];
 const powerups: Powerup[] = [
   { id: 'crucible', name: "Elaine's Crucible", effect: 'Halves number of games needed to earn a clue.', price: 5, icon: Flame },
   { id: 'chronos-eye', name: 'Eye of Chronos', effect: "Curse item: target player can't vote for 3 days.", price: 3, icon: Eye },
-  { id: 'void-core', name: 'Void Core', effect: "Defense item: nullifies all active curse effects.", price: 4, icon: ShieldHalf }
+  { id: 'void-core', name: 'Void Core', effect: "Defense item: nullifies all active curse effects.", price: 4, icon: ShieldHalf },
 ];
 
-export const Marketplace: React.FC = () => {
-  const { isConnected } = useAccount();
-  const [ownedPowerups, setOwnedPowerups] = useState<Set<string>>(new Set());
-  const [ownedClues, setOwnedClues] = useState<Set<number>>(new Set());
+const addrOrGuest = (addr?: string) => addr ?? 'guest';
 
-  const togglePowerup = (id: string) => {
+export const Marketplace: React.FC = () => {
+  const { isConnected, address } = useAccount();
+  const key = useMemo(() => addrOrGuest(address), [address]);
+
+  const dispatch = useAppDispatch();
+  const inventory = useAppSelector((s) => selectInventoryFor(s, key));
+  const ownedPowerups = new Set(inventory.powerups);
+  const ownedClues = new Set(inventory.clues);
+
+  // When a user connects, migrate any guest inventory to their wallet (if wallet has none)
+  useEffect(() => {
+    if (isConnected && address) {
+      dispatch(migrateGuestToAddress({ address }));
+    }
+  }, [isConnected, address, dispatch]);
+
+  const onTogglePowerup = (id: string) => {
     if (!isConnected) return;
-    setOwnedPowerups(prev => {
-      const copy = new Set(prev);
-      copy.has(id) ? copy.delete(id) : copy.add(id);
-      return copy;
-    });
+    dispatch(togglePowerup({ address: key, id }));
   };
 
-  const toggleClue = (id: number) => {
+  const onToggleClue = (id: number) => {
     if (!isConnected) return;
-    setOwnedClues(prev => {
-      const copy = new Set(prev);
-      copy.has(id) ? copy.delete(id) : copy.add(id);
-      return copy;
-    });
+    dispatch(toggleClue({ address: key, id }));
   };
 
   return (
     <div className="min-h-screen relative">
       <SteampunkNavbar />
-      
+
       <div className="pt-24 pb-16 px-4">
         <div className="max-w-7xl mx-auto">
-          {/* Page Header */}
+          {/* Header */}
           <div className="text-center mb-16">
             <h1 className="font-steampunk text-5xl md:text-6xl font-bold text-foreground glow-text mb-6">
               MARKETPLACE
             </h1>
             <p className="font-ornate text-xl text-muted-foreground max-w-3xl mx-auto">
-              Acquire rare mechanical components, ornate decorations, and powerful upgrades from master craftsmen 
-              across the steampunk realm.
+              Acquire rare mechanical components, ornate decorations, and powerful upgrades from master craftsmen across the steampunk realm.
             </p>
           </div>
 
-          {/* Powerups Section */}
+          {/* Powerups */}
           <div className="mb-12">
             <h2 className="font-steampunk text-3xl font-bold text-foreground glow-text mb-6 text-center">Powerups</h2>
-            <p className="font-ornate text-center text-muted-foreground mb-8 max-w-2xl mx-auto text-sm">Strategic items that influence gameplay and progression. Purchase or relinquish (sell back) by toggling below. Selling simply removes ownership (no refund logic implemented yet).</p>
+            <p className="font-ornate text-center text-muted-foreground mb-8 max-w-2xl mx-auto text-sm">
+              Strategic items that influence gameplay and progression. Purchase or relinquish (sell back) by toggling below. Selling simply removes ownership (no refund logic implemented yet).
+            </p>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {powerups.map((p, idx) => (
                 <OrnateCard key={p.id} className="group transition-all duration-300 hover:scale-105 hover:shadow-glow animate-ornate-entrance" style={{ animationDelay: `${idx * 0.08}s` }}>
@@ -77,8 +87,15 @@ export const Marketplace: React.FC = () => {
                   </OrnateCardHeader>
                   <OrnateCardContent className="space-y-4">
                     <p className="font-ornate text-sm text-muted-foreground text-center">{p.effect}</p>
-                    <div className="text-center text-2xl font-steampunk font-bold text-primary glow-text">{p.price} <span className="text-sm text-muted-foreground ml-1">AVAX</span></div>
-                    <OrnateButton variant={ownedPowerups.has(p.id) ? 'hero' : 'gear'} className="w-full" onClick={() => togglePowerup(p.id)} disabled={!isConnected}>
+                    <div className="text-center text-2xl font-steampunk font-bold text-primary glow-text">
+                      {p.price} <span className="text-sm text-muted-foreground ml-1">AVAX</span>
+                    </div>
+                    <OrnateButton
+                      variant={ownedPowerups.has(p.id) ? 'hero' : 'gear'}
+                      className="w-full"
+                      onClick={() => onTogglePowerup(p.id)}
+                      disabled={!isConnected}
+                    >
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       {!isConnected ? 'Connect Wallet' : ownedPowerups.has(p.id) ? 'Sell' : 'Buy'}
                     </OrnateButton>
@@ -88,23 +105,24 @@ export const Marketplace: React.FC = () => {
             </div>
           </div>
 
-          {/* Background Decorative Elements */}
+          {/* Decorative */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <GearSpinner size="xl" className="absolute top-32 right-16 opacity-10 w-32 h-32" />
             <GearSpinner size="lg" reverse className="absolute bottom-40 left-20 opacity-15 w-24 h-24" />
-            <div className="absolute top-60 left-32 text-8xl font-steampunk text-primary/10 animate-glow-pulse">
-              ⚙
-            </div>
+            <div className="absolute top-60 left-32 text-8xl font-steampunk text-primary/10 animate-glow-pulse">⚙</div>
           </div>
 
-          {/* Clue Exchange Section */}
+          {/* Clues */}
           <div className="mt-4">
             <h2 className="font-steampunk text-3xl font-bold text-foreground glow-text mb-6 text-center">Clue Exchange</h2>
-            <p className="font-ornate text-center text-muted-foreground mb-8 max-w-2xl mx-auto text-sm">Acquire investigative clues (or relinquish ones you hold) to progress mysteries. Each clue is valued at <span className="text-primary font-semibold">0.2 AVAX</span>.</p>
+            <p className="font-ornate text-center text-muted-foreground mb-8 max-w-2xl mx-auto text-sm">
+              Acquire investigative clues (or relinquish ones you hold) to progress mysteries. Each clue is valued at <span className="text-primary font-semibold">0.2 AVAX</span>.
+            </p>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {clueList.map((c, idx) => (
                 <OrnateCard key={c.id} className="group transition-all duration-300 hover:shadow-glow animate-ornate-entrance" style={{ animationDelay: `${idx * 0.04}s` }}>
-                  <OrnateCardHeader className="cursor-pointer" onClick={() => toggleClue(c.id)}>
+                  <OrnateCardHeader className="cursor-pointer" onClick={() => onToggleClue(c.id)}>
                     <div className="flex items-start space-x-3">
                       <BookOpen className="w-6 h-6 text-primary mt-1" />
                       <div>
@@ -114,10 +132,19 @@ export const Marketplace: React.FC = () => {
                   </OrnateCardHeader>
                   <OrnateCardContent className="pt-2">
                     <div className="flex items-center justify-between mb-3 text-xs font-ornate">
-                      <span className="text-muted-foreground">Value: <span className="text-primary font-semibold">0.2 AVAX</span></span>
-                      <span className={`px-2 py-1 rounded border ${ownedClues.has(c.id) ? 'border-green-400 text-green-400' : 'border-primary/40 text-primary/70'}`}>{ownedClues.has(c.id) ? 'Owned' : 'Available'}</span>
+                      <span className="text-muted-foreground">
+                        Value: <span className="text-primary font-semibold">0.2 AVAX</span>
+                      </span>
+                      <span className={`px-2 py-1 rounded border ${ownedClues.has(c.id) ? 'border-green-400 text-green-400' : 'border-primary/40 text-primary/70'}`}>
+                        {ownedClues.has(c.id) ? 'Owned' : 'Available'}
+                      </span>
                     </div>
-                    <OrnateButton variant={ownedClues.has(c.id) ? 'hero' : 'gear'} className="w-full" disabled={!isConnected} onClick={() => toggleClue(c.id)}>
+                    <OrnateButton
+                      variant={ownedClues.has(c.id) ? 'hero' : 'gear'}
+                      className="w-full"
+                      disabled={!isConnected}
+                      onClick={() => onToggleClue(c.id)}
+                    >
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       {!isConnected ? 'Connect Wallet' : ownedClues.has(c.id) ? 'Sell' : 'Buy'}
                     </OrnateButton>
@@ -127,7 +154,7 @@ export const Marketplace: React.FC = () => {
             </div>
           </div>
 
-          {/* Ownership Summary */}
+          {/* Inventory summary */}
           {isConnected && (ownedPowerups.size > 0 || ownedClues.size > 0) && (
             <div className="fixed bottom-6 right-6 z-50">
               <OrnateCard className="min-w-[250px] animate-ornate-entrance">
