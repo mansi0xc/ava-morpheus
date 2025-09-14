@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { SteampunkNavbar } from '@/components/steampunk/SteampunkNavbar';
 import { OrnateCard, OrnateCardContent, OrnateCardHeader, OrnateCardTitle } from '@/components/ui/ornate-card';
@@ -7,6 +7,8 @@ import { GearSpinner } from '@/components/steampunk/GearSpinner';
 import { ChevronDown, ChevronRight, Search } from 'lucide-react';
 import contentData from '@/content.json';
 import { getGamesPlayed } from '@/lib/progress';
+import { useAppSelector } from '@/store/hooks';
+import { selectInventoryFor } from '@/store/inventorySlice';
 
 interface ContentClue { id: number; title: string; description: string; avaxConcept: string; educationalLinks?: { briefExplanation?: string; url?: string; title?: string }[]; difficulty: string; }
 interface ContentData { case: { clues: ContentClue[] } }
@@ -18,8 +20,20 @@ export const CaseClues: React.FC = () => {
   const { isConnected, address } = useAccount();
   const [gamesPlayed, setGamesPlayed] = useState<number>(0);
 
-  // Unlock rule: 1 clue per 2 games.
-  const unlockedCount = Math.min(clues.length, Math.floor(gamesPlayed / 2));
+  // Progress-based unlocks: 1 clue per 2 games.
+  const progressUnlocked = Math.min(clues.length, Math.floor(gamesPlayed / 2));
+
+  // Purchased clues from inventory (treat as unlocked regardless of progress)
+  const key = useMemo(() => address ?? 'guest', [address]);
+  const inventory = useAppSelector(state => selectInventoryFor(state as any, key));
+  const purchasedCluesSet = new Set<number>(inventory?.clues || []);
+  const purchasedCount = purchasedCluesSet.size;
+
+  // Effective unlocked: union of progress + purchased
+  const effectiveUnlockedSet = new Set<number>();
+  for (let i = 0; i < progressUnlocked; i++) effectiveUnlockedSet.add(clues[i]?.id);
+  purchasedCluesSet.forEach(id => effectiveUnlockedSet.add(id));
+  const effectiveUnlockedCount = effectiveUnlockedSet.size;
 
   const refreshProgress = useCallback(() => {
     setGamesPlayed(getGamesPlayed(address));
@@ -62,13 +76,20 @@ export const CaseClues: React.FC = () => {
           {isConnected && (
             <div className="space-y-6 relative z-10">
               <div className="mb-2 px-4 py-3 rounded border border-primary/30 bg-primary/5 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <div className="text-sm font-ornate text-muted-foreground">
-                  Games Played: <span className="text-primary font-semibold">{gamesPlayed}</span> &middot; Unlocked Clues: <span className="text-primary font-semibold">{unlockedCount}</span>/<span>{clues.length}</span>
+                <div className="text-sm font-ornate text-muted-foreground flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                  <span>Games Played: <span className="text-primary font-semibold">{gamesPlayed}</span></span>
+                  <span>Clues Unlocked: <span className="text-primary font-semibold">{effectiveUnlockedCount}</span>/<span>{clues.length}</span></span>
                 </div>
-                <div className="text-[11px] text-muted-foreground font-ornate">Unlock Rule: 1 clue per 2 completed games.</div>
+                <div className="text-[11px] text-muted-foreground font-ornate flex flex-col md:items-end md:text-right">
+                  <span>Rule: 1 per 2 games (progress)</span>
+                  <span className="mt-0.5">Breakdown: <span className="text-primary/90">{progressUnlocked}</span> via play / <span className="text-primary/90">{purchasedCount}</span> purchased</span>
+                </div>
               </div>
               {clues.map((clue, index) => {
-                const locked = index >= unlockedCount;
+                // Determine lock: unlocked if within progress range OR purchased
+                const isProgressUnlocked = index < progressUnlocked;
+                const isPurchased = purchasedCluesSet.has(clue.id);
+                const locked = !(isProgressUnlocked || isPurchased);
                 const expanded = expandedClue === clue.id && !locked;
                 return (
                   <OrnateCard
