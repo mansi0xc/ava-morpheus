@@ -101,7 +101,7 @@ export const Marketplace: React.FC = () => {
 
   // When the tx confirms, flip the corresponding item in Redux and clear pending
   useEffect(() => {
-    if (!isSuccess || !txHash) return;
+    if (!isSuccess || !txHash) return; 
 
     // Powerup success
     if (pendingPowerups.size > 0) {
