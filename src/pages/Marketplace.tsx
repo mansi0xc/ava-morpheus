@@ -295,7 +295,7 @@ export const Marketplace: React.FC = () => {
                           disabled={item.inStock === 0 || !isConnected}
                         >
                           <ShoppingCart className="w-4 h-4 mr-2" />
-                          {!isConnected ? 'Connect Wallet' : item.inStock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                          {!isConnected ? 'Connect Wallet' : item.inStock === 0 ? 'Out of Stock' : 'Buy'}
                         </OrnateButton>
                       )}
                       <OrnateButton variant="ghost" size="icon">

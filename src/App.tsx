@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import NFTCollection from "./pages/NFTCollections";
 import NotFound from "./pages/NotFound";
 import { SudokuGame } from '@/games/SudokuGame';
+import Wordle from '@/games/Wordle';
 import SpellingBee from '@/games/SpellingBee';
 import { MASTER_WORD_LIST } from '@/data/spellingBeeWordList';
 
@@ -41,6 +42,7 @@ const App = () => (
         <Route path="/profile" element={<Profile />} />
         <Route path="/nft-collection" element={<NFTCollection />} />
   <Route path="/games/sudoku" element={<SudokuGame />} />
+  <Route path="/games/gear-assembly" element={<Wordle />} />
   <Route path="/games/steam-cipher" element={<SpellingBee wordList={MASTER_WORD_LIST} />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

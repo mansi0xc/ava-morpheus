@@ -144,6 +144,15 @@ export const GameCatalog: React.FC = () => {
                         ENTER GAME
                       </OrnateButton>
                     </Link>
+                  ) : game.id === 'puzzle' ? (
+                    <Link to="/games/gear-assembly">
+                      <OrnateButton 
+                        variant="gear" 
+                        className="w-full group-hover:bg-primary group-hover:text-primary-foreground"
+                      >
+                        ENTER GAME
+                      </OrnateButton>
+                    </Link>
                   ) : (
                     <OrnateButton 
                       variant="gear" 
