@@ -571,4 +571,4 @@ export const abi = [
     }
 ];
 
-// export const address = "";
+export const address = "0xCe99350839F672286885aa0626372575B671e57E";
