@@ -33,7 +33,7 @@ export const Marketplace: React.FC = () => {
 
   // Redux inventory (persistent)
   const dispatch = useAppDispatch();
-  const inventory = useAppSelector((s) => selectInventoryFor(s, key));
+  const inventory = useAppSelector((s) => selectInventoryFor(s as any, key));
   const ownedPowerups = new Set(inventory.powerups);
   const ownedClues = new Set(inventory.clues);
 
@@ -53,6 +53,8 @@ export const Marketplace: React.FC = () => {
   // Track which specific items are pending (so we can show spinners)
   const [pendingPowerups, setPendingPowerups] = useState<Set<string>>(new Set());
   const [pendingClues, setPendingClues] = useState<Set<number>>(new Set());
+  // Inventory panel visibility
+  const [inventoryOpen, setInventoryOpen] = useState<boolean>(false);
 
   // ----- BUY handlers (on-chain); on success, persist to Redux -----
   const handleBuyPowerup = async (id: string) => {
@@ -61,12 +63,12 @@ export const Marketplace: React.FC = () => {
       setPendingPowerups(prev => new Set(prev).add(id));
       const hash = await writeContractAsync({
         address: marketplaceAddress as `0x${string}`,
-        abi: marketplaceAbi,
+        abi: marketplaceAbi as any,
         functionName: 'payLarge',
         args: [],
         account: address as `0x${string}` | undefined,
         value: parseEther('10'),
-      });
+      } as any);
       setTxHash(hash);
     } catch (err) {
       // User rejected or send error -> clear pending immediately
@@ -83,12 +85,12 @@ export const Marketplace: React.FC = () => {
       setPendingClues(prev => new Set(prev).add(id));
       const hash = await writeContractAsync({
         address: marketplaceAddress as `0x${string}`,
-        abi: marketplaceAbi,
+        abi: marketplaceAbi as any,
         functionName: 'paySmall',
         args: [],
         account: address as `0x${string}` | undefined,
         value: parseEther('0.2'),
-      });
+      } as any);
       setTxHash(hash);
     } catch (err) {
       // User rejected or send error -> clear pending immediately
@@ -104,20 +106,22 @@ export const Marketplace: React.FC = () => {
     if (!isSuccess || !txHash) return;
 
     // Powerup success
+    let purchasedSomething = false;
     if (pendingPowerups.size > 0) {
       const id = Array.from(pendingPowerups)[0];
-      dispatch(togglePowerup({ address: key, id }));  // persist ownership
+      dispatch(togglePowerup({ address: key, id }));
       setPendingPowerups(new Set());
+      purchasedSomething = true;
     }
-
-    // Clue success
     if (pendingClues.size > 0) {
       const id = Array.from(pendingClues)[0];
-      dispatch(toggleClue({ address: key, id }));     // persist ownership
+      dispatch(toggleClue({ address: key, id }));
       setPendingClues(new Set());
+      purchasedSomething = true;
     }
-
-    // Clear tracked hash
+    if (purchasedSomething) {
+      setInventoryOpen(true); // auto-open inventory after successful purchase
+    }
     setTxHash(undefined);
   }, [isSuccess, txHash, pendingPowerups, pendingClues, dispatch, key]);
 
@@ -196,7 +200,7 @@ export const Marketplace: React.FC = () => {
                     >
                       {pendingPowerups.has(p.id) ? (
                         <>
-                          <GearSpinner size="xs" className="mr-2" />
+                          <GearSpinner size="sm" className="mr-2" />
                           Processing...
                         </>
                       ) : ownedPowerups.has(p.id) ? (
@@ -265,7 +269,7 @@ export const Marketplace: React.FC = () => {
                     >
                       {pendingClues.has(c.id) ? (
                         <>
-                          <GearSpinner size="xs" className="mr-2" />
+                          <GearSpinner size="sm" className="mr-2" />
                           Processing...
                         </>
                       ) : ownedClues.has(c.id) ? (
@@ -283,20 +287,61 @@ export const Marketplace: React.FC = () => {
             </div>
           </div>
 
-          {/* Inventory summary */}
-          {/* Optional: update footnote since selling is disabled */}
-          {isConnected && (ownedPowerups.size > 0 || ownedClues.size > 0) && (
-            <div className="fixed bottom-6 right-6 z-50">
-              <OrnateCard className="min-w-[250px] animate-ornate-entrance">
-                <OrnateCardContent className="space-y-4">
-                  <h3 className="font-steampunk text-lg font-bold text-foreground glow-text">Inventory</h3>
-                  <div className="space-y-2 text-xs font-ornate">
-                    <div className="flex justify-between"><span>Powerups:</span><span className="text-primary font-semibold">{ownedPowerups.size}</span></div>
-                    <div className="flex justify-between"><span>Clues:</span><span className="text-primary font-semibold">{ownedClues.size}</span></div>
-                  </div>
-                  <div className="text-[10px] text-muted-foreground">(Transaction + refund logic not yet implemented — this is a UI prototype.)</div>
-                </OrnateCardContent>
-              </OrnateCard>
+          {/* Inventory floating panel */}
+          {isConnected && (
+            <div className="fixed bottom-6 right-6 z-50 space-y-2 w-64">
+              <div className="flex justify-end">
+                <OrnateButton
+                  variant="gear"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => setInventoryOpen(o => !o)}
+                >
+                  {inventoryOpen ? 'Hide Inventory' : 'Show Inventory'}
+                </OrnateButton>
+              </div>
+              {inventoryOpen && (
+                <OrnateCard className="animate-ornate-entrance">
+                  <OrnateCardContent className="space-y-4 relative">
+                    <button
+                      onClick={() => setInventoryOpen(false)}
+                      className="absolute top-2 right-2 text-xs px-2 py-1 rounded border border-primary/40 text-primary/70 hover:text-primary bg-background/60"
+                      aria-label="Close inventory"
+                    >×</button>
+                    <h3 className="font-steampunk text-lg font-bold text-foreground glow-text pr-4">Inventory</h3>
+                    <div className="space-y-2 text-xs font-ornate">
+                      <div className="flex justify-between"><span>Powerups</span><span className="text-primary font-semibold">{ownedPowerups.size}</span></div>
+                      <div className="flex justify-between"><span>Clues</span><span className="text-primary font-semibold">{ownedClues.size}</span></div>
+                    </div>
+                    {(ownedPowerups.size > 0 || ownedClues.size > 0) && (
+                      <div className="space-y-2">
+                        {ownedPowerups.size > 0 && (
+                          <div>
+                            <p className="font-steampunk text-[11px] text-primary mb-1">Powerups Owned</p>
+                            <ul className="space-y-1 max-h-24 overflow-auto pr-1">
+                              {Array.from(ownedPowerups).map(id => {
+                                const meta = powerups.find(p => p.id === id);
+                                return <li key={id} className="font-ornate text-[11px] text-muted-foreground">{meta?.name || id}</li>;
+                              })}
+                            </ul>
+                          </div>
+                        )}
+                        {ownedClues.size > 0 && (
+                          <div>
+                            <p className="font-steampunk text-[11px] text-primary mb-1">Clues Owned</p>
+                            <ul className="flex flex-wrap gap-1 text-[10px] font-ornate">
+                              {Array.from(ownedClues).map(id => (
+                                <li key={id} className="px-2 py-0.5 rounded border border-primary/30 text-primary/80">#{id}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="text-[10px] text-muted-foreground">Prototype marketplace: economic balancing & refunds TBD.</div>
+                  </OrnateCardContent>
+                </OrnateCard>
+              )}
             </div>
           )}
         </div>
